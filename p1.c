@@ -14,6 +14,7 @@
 #include <sys/utsname.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <dirent.h>
 
 
 #include "list.h"
@@ -107,6 +108,8 @@ void cmd_carpeta(char *tr[]){
     if(chdir(tr[0]) == -1){
         printf("Cannot change dir %s:\n", tr[0]);
         perror("");
+
+
     } else printf("New directory: %s\n",getcwd(dir, MAXLINEA));
 
 }
@@ -154,10 +157,11 @@ void cmd_ayuda(char *tr[]){
     else if(!strcmp(tr[0],"hist")) printf("hist [-c][-N]: Shows the historic of commands executed by this shell in order.\n\n\t-c\tclears the historic.\n\t-N\tprints the first N comands\n\n");
     else if(!strcmp(tr[0],"comando")) printf("comando N: Repeats command number N\n");
     else if(!strcmp(tr[0],"infosis")) printf("infosis: Prints information on the machine running the shell\n");
-    else if(!strcmp(tr[0],"ayuda")) printf("ayuda [cmd]: ayuda displays a list of available commands.\n\n\t-cmd\tgives a brief help on the usage of comand cmd\n\n");
+    else if(!strcmp(tr[0],"ayuda")) printf("ayuda [cmd]: ayuda displays a list of available commands.\n\n\t[cmd]\tgives a brief help on the usage of comand cmd\n\n");
     else if(!strcmp(tr[0],"fin")) printf("fin: Ends the shell\n");
     else if(!strcmp(tr[0],"bye")) printf("bye: Ends the shell\n");
     else if(!strcmp(tr[0],"salir")) printf("salir: Ends the shell\n");
+    else if(!strcmp(tr[0],"crear")) printf("crear [-f] [name]: Creates a directory or file in the file system.\n\n\tcrear\t\t shows the current directory\n\tcrear [name]\t creates an empty directory with name [name]\n\tcrear -f [name]  creates an empty file with name [name]\n\n");
     else printf("command not found\n");
 
 }
@@ -248,26 +252,49 @@ void cmd_comando(char *nchar[]){
 
 
 void cmd_crear(char *tr[]){
+/*  */
 
     if(tr[0]==NULL) cmd_carpeta(tr);
     else if(!strcmp(tr[0],"-f")){
-        if (tr[1]==NULL) cmd_carpeta(tr);
+        if (tr[1]==NULL) cmd_carpeta(tr+1);
         else{
-            FILE *fp;
-            fp  = fopen (tr[1],"w");
+            FILE *f;
+            f  = fopen (tr[1],"w");
+
+            if (f==NULL) perror("Error");
         }
     }
     else {
-        mkdir(tr[0],S_IRWXU);
-        perror("");
+        if(mkdir(tr[0],S_IRWXU)==-1){
+            perror("Imposible crear");
+
+        }
+    }
+}
+
+void cmd_borrar(char *tr[]){
+
+    int i=0;
+    FILE *f;
+    DIR *d;
+
+
+    while (tr[i]!=NULL){
+
+        if ((f= fopen(tr[i],"r"))) {
+            printf("is file\n");
+            fclose(f);
+        }
+        else if ((d= opendir(tr[i]))){
+            printf("is dir\n");
+            closedir(d);
+        }
+
+        i++;
     }
 
 
 
-}
-
-void cmd_borrar(char *tr[]){
-    printf("borrar");
 
 
 }
