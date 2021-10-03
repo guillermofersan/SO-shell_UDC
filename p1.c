@@ -1,5 +1,5 @@
 /*
- * SO LabAssignment0
+ * SO LabAssignment1
  *
  * AUTHOR 1: Guillermo Fernández Sánchez | login: guillermo.fernandezs
  * AUTHOR 2: Javier Fernández Rozas      | login: j.frozas
@@ -12,6 +12,9 @@
 #include <unistd.h>
 #include <time.h>
 #include <sys/utsname.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+
 
 #include "list.h"
 
@@ -32,6 +35,14 @@ void cmd_hist(char **);
 void cmd_comando(char **);
 void cmd_infosis(char **);
 void cmd_ayuda(char **);
+void cmd_crear(char **);
+void cmd_borrar(char **);
+void cmd_borrarrec(char **);
+void cmd_listfich(char **);
+void cmd_listdir(char **);
+
+
+
 
 struct CMD{
     char * cmdname;
@@ -50,6 +61,11 @@ struct CMD C[]={
         {"comando", cmd_comando},
         {"infosis", cmd_infosis},
         {"ayuda", cmd_ayuda},
+        {"crear", cmd_crear},
+        {"borrar", cmd_borrar},
+        {"borrarrec", cmd_borrarrec},
+        {"listfich", cmd_listfich},
+        {"listdir", cmd_listdir},
         {NULL ,NULL}
 };
 
@@ -230,6 +246,54 @@ void cmd_comando(char *nchar[]){
     iscmd=false;
 }
 
+
+void cmd_crear(char *tr[]){
+
+    if(tr[0]==NULL) cmd_carpeta(tr);
+    else if(!strcmp(tr[0],"-f")){
+        if (tr[1]==NULL) cmd_carpeta(tr);
+        else{
+            FILE *fp;
+            fp  = fopen (tr[1],"w");
+        }
+    }
+    else {
+        mkdir(tr[0],S_IRWXU);
+        perror("");
+    }
+
+
+
+}
+
+void cmd_borrar(char *tr[]){
+    printf("borrar");
+
+
+}
+
+void cmd_borrarrec(char *tr[]){
+    printf("borrarrec");
+
+
+}
+
+void cmd_listfich(char *tr[]){
+    printf("lf");
+
+
+}
+
+void cmd_listdir(char *tr[]){
+    printf("ld");
+
+
+}
+
+
+
+
+
 int trocearcadena(char * cadena, char * trozos[]){
     int i=1;
 
@@ -248,11 +312,14 @@ void ProcesarEntrada(char *tr[]){
     int i;
     if(tr[0]==NULL) return;
     for (i = 0; C[i].cmdname != NULL; i++) {
+
         if (!strcmp(tr[0],C[i].cmdname)){
            (*C[i].func)(tr+1);
            found=true;
         }
+
     }
+
     if(!found) printf("command not found\n");
 
 

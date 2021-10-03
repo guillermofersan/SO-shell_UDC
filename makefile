@@ -6,3 +6,4 @@ p1.o: p1.c list.h
 
 list.o: list.c list.h
 	gcc -c list.c
+

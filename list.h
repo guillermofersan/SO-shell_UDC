@@ -1,5 +1,5 @@
 /*
- * SO LabAssignment0
+ * SO LabAssignment1
  *
  * AUTHOR 1: Guillermo Fernández Sánchez | login: guillermo.fernandezs
  * AUTHOR 2: Javier Fernández Rozas      | login: j.frozas
