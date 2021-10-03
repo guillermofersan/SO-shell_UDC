@@ -1,0 +1,2 @@
+# SOpract
+Operative Systems Practicals
