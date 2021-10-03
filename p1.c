@@ -258,6 +258,7 @@ void cmd_crear(char *tr[]){
     else if(!strcmp(tr[0],"-f")){
         if (tr[1]==NULL) cmd_carpeta(tr+1);
         else{
+
             FILE *f;
             f  = fopen (tr[1],"w");
 
@@ -278,29 +279,40 @@ void cmd_borrar(char *tr[]){
     FILE *f;
     DIR *d;
 
+    while (tr[i]!=NULL){
+
+            if (remove(tr[i])==-1) perror("Imposible eliminar");
+
+        i++;
+    }
+}
+
+void deleteDir(const char *path){
+
+    DIR *d;
+    struct dirent *dirStruct;
+    d = opendir(path);
+
+    dirStruct = readdir(d);
+
+}
+
+void cmd_borrarrec(char *tr[]){
+
+    int i=0;
+    DIR *d;
 
     while (tr[i]!=NULL){
 
-        if ((f= fopen(tr[i],"r"))) {
-            printf("is file\n");
-            fclose(f);
-        }
-        else if ((d= opendir(tr[i]))){
-            printf("is dir\n");
+        if((d= opendir(tr[i]))){
             closedir(d);
-        }
+            if (remove(tr[i])==-1) deleteDir(tr[i]);
+        } else if (remove(tr[i])==-1) perror("Imposible eliminar");
 
         i++;
     }
 
 
-
-
-
-}
-
-void cmd_borrarrec(char *tr[]){
-    printf("borrarrec");
 
 
 }
