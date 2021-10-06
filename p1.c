@@ -288,12 +288,26 @@ void cmd_borrar(char *tr[]){
 }
 
 void deleteDir(const char *path){
-
+    /*precondition: path belongs to a real directory*/
+    int i=0;
     DIR *d;
     struct dirent *dirStruct;
+    struct stat *fileStruct;
     d = opendir(path);
 
-    dirStruct = readdir(d);
+        if (d) {
+            while ((dirStruct = readdir(d)) != NULL) {
+                printf("removing: %d->%s\n", i,dirStruct->d_name);
+                i++;
+                if (strcmp(dirStruct->d_name,".")!=0 && strcmp(dirStruct->d_name,"..")!=0){
+                    if (remove(dirStruct->d_name)==-1) perror("");
+                }
+             }
+                closedir(d);
+        }
+
+
+    remove(path);
 
 }
 
