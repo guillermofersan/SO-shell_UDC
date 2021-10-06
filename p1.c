@@ -287,26 +287,45 @@ void cmd_borrar(char *tr[]){
     }
 }
 
+bool isDir (const char *path) {
+    DIR *d;
+
+    if ((d = opendir(path))) {
+        closedir(d);
+        return true;
+    } else return false;
+}
+
 void deleteDir(const char *path){
     /*precondition: path belongs to a real directory*/
     int i=0;
     DIR *d;
     struct dirent *dirStruct;
     struct stat *fileStruct;
+    char dir[MAXLINEA];
+    char Curdir[MAXLINEA];
+    strcpy(Curdir,getcwd(dir, MAXLINEA));
+
     d = opendir(path);
 
+    chdir(path);
         if (d) {
             while ((dirStruct = readdir(d)) != NULL) {
-                printf("removing: %d->%s\n", i,dirStruct->d_name);
-                i++;
+
                 if (strcmp(dirStruct->d_name,".")!=0 && strcmp(dirStruct->d_name,"..")!=0){
-                    if (remove(dirStruct->d_name)==-1) perror("");
+                    printf("removing: %d->%s\n", i,dirStruct->d_name);
+                    i++;
+                    if (isDir(dirStruct->d_name)){
+                        deleteDir(dirStruct->d_name);
+                    }else{
+                        if (remove(dirStruct->d_name)==-1) perror("");
+                    }
                 }
              }
                 closedir(d);
         }
 
-
+    chdir(Curdir);
     remove(path);
 
 }
