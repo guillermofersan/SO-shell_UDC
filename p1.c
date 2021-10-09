@@ -350,14 +350,118 @@ void cmd_borrarrec(char *tr[]){
 
 }
 
-void cmd_listfich(char *tr[]){
-    printf("lf");
+void printFile(bool longListing, bool link, bool acc, char* name){
 
+    printf("%s\n", name);
 
 }
 
+
+
+void cmd_listfich(char *tr[]){
+
+    /* (use stat)
+     * none: size and name of each file
+     * longListing: print out the date of last modification (in format YYYY/MM/DD-HH:mm), number of links,
+     *              owner, group, mode (drwx format), size and name of the file.
+     *              date number of links (inode number) owner group mode size name
+     * link: only for long listing: if the file is a symbolic link the name of the file it points is printed as well
+     *       date number of links (inode number) owner group mode size name->file the link points to
+     *
+     * acc: last access time will be used instead of last modification time
+     * */
+
+    bool longListing=false, link=false, acc=false;
+    int i=0,j=0,k=0;
+
+
+    char *names[MAXLINEA / 2];
+
+    while(tr[i]!=NULL){
+        if(!strcmp(tr[i],"-long")){
+            longListing=true;
+        } else if (!strcmp(tr[i],"-link")){
+            link=true;
+        } else if (!strcmp(tr[i],"-acc")){
+            acc=true;
+        } else{
+            names[j]=tr[i];
+            j++;
+        }
+        i++;
+    }
+    names[j]=NULL;
+    if(j==0) {
+        cmd_carpeta(tr+i);
+    } else{
+        while (names[k]!=NULL){
+            printFile(longListing, link, acc, names[k]);
+            k++;
+        }
+    }
+
+}
+
+
 void cmd_listdir(char *tr[]){
-    printf("ld");
+
+    /*
+     * If file, use printFile
+     * if no name
+     *
+     * none: size and name of each file
+     * longListing: print out the date of last modification (in format YYYY/MM/DD-HH:mm), number of links,
+     *              owner, group, mode (drwx format), size and name of the file.
+     *              date number of links (inode number) owner group mode size name
+     * link: only for long listing: if the file is a symbolic link the name of the file it points is printed as well
+     *       date number of links (inode number) owner group mode size name->file the link points to
+     *
+     * acc: last access time will be used instead of last modification time
+     *
+     * hid: hidden files and directories are also listed
+     *
+     *reca:  when listing a directory’s contents, subdirectories will be listed recursively AFTER all the files in the directory.
+     *       (if the -hid option is also given, hidden subdirectories will also get listed, except . and .. to avoid infinite recursion).
+     *
+     *recb: same as reca but contents are listed before the files in the directory
+     *
+     * */
+
+    bool longListing=false, link=false, acc=false, hid=false;
+    int i=0,j=0,k=0,rec=0;
+    /*rec=0 if no recursion
+     *rec=1 if reca
+     *rec=2 if reb
+     */
+
+
+    char *names[MAXLINEA / 2];
+
+    while(tr[i]!=NULL){
+        if(!strcmp(tr[i],"-long")){
+            longListing=true;
+        } else if (!strcmp(tr[i],"-link")){
+            link=true;
+        } else if (!strcmp(tr[i],"-acc")){
+            acc=true;
+        } else if (!strcmp(tr[i],"-hid")){
+            hid=true;
+        } else if (!strcmp(tr[i],"-reca")){
+            rec=1;
+        } else if (!strcmp(tr[i],"-recb")){
+            rec=2;
+        } else{
+            names[j]=tr[i];
+            j++;
+        }
+        i++;
+    }
+    names[j]=NULL;
+
+    /*
+     * Loop to display each file with printfile nose
+     * */
+
 
 
 }
