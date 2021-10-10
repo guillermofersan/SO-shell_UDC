@@ -15,11 +15,18 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <dirent.h>
+#include <unistd.h>
+#include <libgen.h>
+#include <pwd.h>
+#include <errno.h>
+
 
 
 #include "list.h"
 
 #define MAXLINEA 1024
+#define st_atime st_atim.tv_sec
+#define st_mtime st_mtim.tv_sec
 
 tList list;
 bool iscmd;
@@ -344,15 +351,81 @@ void cmd_borrarrec(char *tr[]){
 
         i++;
     }
-
-
-
-
 }
+
+char LetraTF (mode_t m)
+{
+    switch (m&S_IFMT) { /*and bit a bit con los bits de formato,0170000 */
+        case S_IFSOCK: return 's'; /*socket */
+        case S_IFLNK: return 'l'; /*symbolic link*/
+        case S_IFREG: return '-'; /* fichero normal*/
+        case S_IFBLK: return 'b'; /*block device*/
+        case S_IFDIR: return 'd'; /*directorio */
+        case S_IFCHR: return 'c'; /*char device*/
+        case S_IFIFO: return 'p'; /*pipe*/
+        default: return '?';/*desconocido, no deberia aparecer*/
+    }
+}
+
+char * ConvierteModo (mode_t m)
+{
+    char * permisos;
+    permisos=(char *) malloc (12);
+    strcpy (permisos,"----------");
+    permisos[0]=LetraTF(m);
+    if (m&S_IRUSR) permisos[1]='r'; /*propietario*/
+    if (m&S_IWUSR) permisos[2]='w';
+    if (m&S_IXUSR) permisos[3]='x';
+    if (m&S_IRGRP) permisos[4]='r'; /*grupo*/
+    if (m&S_IWGRP) permisos[5]='w';
+    if (m&S_IXGRP) permisos[6]='x';
+    if (m&S_IROTH) permisos[7]='r'; /*resto*/
+    if (m&S_IWOTH) permisos[8]='w';
+    if (m&S_IXOTH) permisos[9]='x';
+    if (m&S_ISUID) permisos[3]='s'; /*setuid, setgid y stickybit*/
+    if (m&S_ISGID) permisos[6]='s';
+    if (m&S_ISVTX) permisos[9]='t';
+    return (permisos);
+}
+
+
 
 void printFile(bool longListing, bool link, bool acc, char* name){
 
-    printf("%s\n", name);
+    struct stat fileData;
+    time_t t;
+    struct tm tm;
+    char linkName[1024];
+
+    if (!stat(name, &fileData)){
+
+        if(longListing){
+            if(acc){
+                t=fileData.st_atime;
+            } else {
+                t=fileData.st_mtime;
+            }
+
+            tm = *localtime(&t);
+
+            printf("%04d/%02d/%02d-%02d:%02d ",tm.tm_year+1900,tm.tm_mon+1, tm.tm_mday,  tm.tm_hour, tm.tm_min);
+
+
+            //Solo falta terminar el espaciado y la tabulacion
+            printf("%lu (%lu) %s %s %s ",fileData.st_nlink, fileData.st_ino, getpwuid(fileData.st_uid)->pw_name, getpwuid(fileData.st_gid)->pw_name, ConvierteModo(fileData.st_mode));
+        }
+
+        printf("%ld %s",fileData.st_size, name);
+
+        if(link && longListing){
+
+            if ((readlink(name, linkName, sizeof(linkName)-1)) != -1){
+                printf("->%s", basename(linkName));
+            }
+        }
+
+        printf("\n");
+    } else printf("Unable to access %s: %s\n",name,strerror(errno));
 
 }
 
