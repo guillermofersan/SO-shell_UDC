@@ -113,9 +113,7 @@ void cmd_carpeta(char *tr[]){
         printf("%s\n", getcwd(dir, MAXLINEA));
     else
     if(chdir(tr[0]) == -1){
-        printf("Cannot change dir %s:\n", tr[0]);
-        perror("");
-
+        printf("Cannot change dir %s: %s\n", tr[0], strerror(errno));
 
     } else printf("New directory: %s\n",getcwd(dir, MAXLINEA));
 
@@ -247,7 +245,6 @@ void cmd_comando(char *nchar[]){
             puts(item.cmdline);
 
             strcpy(linea, item.cmdline);
-
             trocearcadena(linea, tr);
             ProcesarEntrada(tr);
 
@@ -259,22 +256,26 @@ void cmd_comando(char *nchar[]){
 
 
 void cmd_crear(char *tr[]){
-/*  */
+
 
     if(tr[0]==NULL) cmd_carpeta(tr);
     else if(!strcmp(tr[0],"-f")){
         if (tr[1]==NULL) cmd_carpeta(tr+1);
         else{
 
-            FILE *f;
-            f  = fopen (tr[1],"w");
+            /*FIND A BETTER WAY USING strerror AND JUST 1 SYSTEM CALL*/
+            if  (fopen (tr[1],"r")!=NULL){
+                printf("Unable to create file %s: File already exists\n",tr[1]);
 
-            if (f==NULL) perror("Error");
+            } else if (fopen (tr[1],"w")==NULL){
+
+                printf("Unable to create file %s: %s\n",tr[1],strerror(errno));
+            }
         }
     }
     else {
         if(mkdir(tr[0],S_IRWXU)==-1){
-            perror("Imposible crear");
+            printf("Unable to create directory %s: %s\n",tr[0],strerror(errno));
 
         }
     }
@@ -288,7 +289,7 @@ void cmd_borrar(char *tr[]){
 
     while (tr[i]!=NULL){
 
-            if (remove(tr[i])==-1) perror("Imposible eliminar");
+            if (remove(tr[i])==-1) printf("Unable to delete %s: %s\n",tr[i], strerror(errno));
 
         i++;
     }
@@ -325,7 +326,7 @@ void deleteDir(const char *path){
                     if (isDir(dirStruct->d_name)){
                         deleteDir(dirStruct->d_name);
                     }else{
-                        if (remove(dirStruct->d_name)==-1) perror("");
+                        if (remove(dirStruct->d_name)==-1) printf("Unable to delete %s: %s",dirStruct->d_name, strerror(errno));
                     }
                 }
              }
@@ -333,7 +334,9 @@ void deleteDir(const char *path){
         }
 
     chdir(Curdir);
-    remove(path);
+    if(remove(path)==-1){
+        printf("Unable to delete %s: %s\n",path, strerror(errno));
+    }
 
 }
 
@@ -347,7 +350,7 @@ void cmd_borrarrec(char *tr[]){
         if((d= opendir(tr[i]))){
             closedir(d);
             if (remove(tr[i])==-1) deleteDir(tr[i]);
-        } else if (remove(tr[i])==-1) perror("Imposible eliminar");
+        } else if (remove(tr[i])==-1) printf("Unable to delete %s: %s\n",tr[i], strerror(errno));
 
         i++;
     }
