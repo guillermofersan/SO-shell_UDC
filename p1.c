@@ -268,7 +268,6 @@ void cmd_crear(char *tr[]){
                 printf("Unable to create file %s: File already exists\n",tr[1]);
 
             } else if (fopen (tr[1],"w")==NULL){
-
                 printf("Unable to create file %s: %s\n",tr[1],strerror(errno));
             }
         }
@@ -289,7 +288,9 @@ void cmd_borrar(char *tr[]){
 
     while (tr[i]!=NULL){
 
-            if (remove(tr[i])==-1) printf("Unable to delete %s: %s\n",tr[i], strerror(errno));
+        if (remove(tr[i])==-1) {
+            printf("Unable to delete %s: %s\n", tr[i], strerror(errno));
+        }
 
         i++;
     }
@@ -309,7 +310,6 @@ void deleteDir(const char *path){
     int i=0;
     DIR *d;
     struct dirent *dirStruct;
-    struct stat *fileStruct;
     char dir[MAXLINEA];
     char Curdir[MAXLINEA];
     strcpy(Curdir,getcwd(dir, MAXLINEA));
@@ -317,21 +317,21 @@ void deleteDir(const char *path){
     d = opendir(path);
 
     chdir(path);
-        if (d) {
-            while ((dirStruct = readdir(d)) != NULL) {
+    if (d) {
+        while ((dirStruct = readdir(d)) != NULL) {
 
-                if (strcmp(dirStruct->d_name,".")!=0 && strcmp(dirStruct->d_name,"..")!=0){
-                    printf("removing: %d->%s\n", i,dirStruct->d_name);
-                    i++;
-                    if (isDir(dirStruct->d_name)){
-                        deleteDir(dirStruct->d_name);
-                    }else{
-                        if (remove(dirStruct->d_name)==-1) printf("Unable to delete %s: %s",dirStruct->d_name, strerror(errno));
-                    }
+            if (strcmp(dirStruct->d_name,".")!=0 && strcmp(dirStruct->d_name,"..")!=0){
+                printf("removing: %d->%s\n", i,dirStruct->d_name);
+                i++;
+                if (isDir(dirStruct->d_name)){
+                    deleteDir(dirStruct->d_name);
+                }else{
+                    if (remove(dirStruct->d_name)==-1) printf("Unable to delete %s: %s",dirStruct->d_name, strerror(errno));
                 }
-             }
-                closedir(d);
+            }
         }
+        closedir(d);
+    }
 
     chdir(Curdir);
     if(remove(path)==-1){
@@ -400,7 +400,7 @@ void printFile(bool longListing, bool link, bool acc, char* name){
     struct tm tm;
     char linkName[1024];
 
-    if (!stat(name, &fileData)){
+    if (!lstat(name, &fileData)){
 
         if(longListing){
             if(acc){
@@ -428,9 +428,11 @@ void printFile(bool longListing, bool link, bool acc, char* name){
         }
 
         printf("\n");
-    } else printf("Unable to access %s: %s\n",name,strerror(errno));
+    } else printf("cannot access %s: %s\n",name,strerror(errno));
 
 }
+
+
 
 
 
@@ -448,36 +450,85 @@ void cmd_listfich(char *tr[]){
      * */
 
     bool longListing=false, link=false, acc=false;
-    int i=0,j=0,k=0;
+    int i,names=0;
 
+    for (i = 0; i < 3; ++i) {
 
-    char *names[MAXLINEA / 2];
-
-    while(tr[i]!=NULL){
-        if(!strcmp(tr[i],"-long")){
+        if(tr[i]==NULL){
+            cmd_carpeta(tr+i);
+            return;
+        }
+        else if(!strcmp(tr[i],"-long")){
             longListing=true;
         } else if (!strcmp(tr[i],"-link")){
             link=true;
         } else if (!strcmp(tr[i],"-acc")){
             acc=true;
         } else{
-            names[j]=tr[i];
-            j++;
+            break;
         }
-        i++;
     }
-    names[j]=NULL;
-    if(j==0) {
+
+    while (tr[i]!=NULL){
+        printFile(longListing, link, acc, tr[i]);
+        i++;
+        names++;
+    }
+
+    if (names==0) {
         cmd_carpeta(tr+i);
-    } else{
-        while (names[k]!=NULL){
-            printFile(longListing, link, acc, names[k]);
-            k++;
-        }
+
     }
 
 }
 
+
+
+
+void printDir(bool longlisting, bool link, bool acc, bool hid, int rec, char* path){
+
+    int i=0;
+    DIR *d;
+    struct dirent *dirStruct;
+    char dir[MAXLINEA];
+    char Curdir[MAXLINEA];
+    strcpy(Curdir,getcwd(dir, MAXLINEA));
+
+    d = opendir(path);
+
+
+    chdir(path);
+
+    if (d) {
+        while ((dirStruct = readdir(d)) != NULL) {
+
+            if (hid || dirStruct->d_name[0]!='.') {
+
+                if(isDir(dirStruct->d_name) && rec!=0){
+
+                }
+                printFile(longlisting, link, acc, dirStruct->d_name);
+                i++;
+            /*
+                if (hid) {
+                    printFile(longlisting, link, acc, dirStruct->d_name);
+                    i++;
+                }
+            }
+            else{
+
+                printFile(longlisting, link, acc, dirStruct->d_name);
+                i++;
+
+            */
+            }
+
+        }
+        closedir(d);
+    }
+    chdir(Curdir);
+
+}
 
 void cmd_listdir(char *tr[]){
 
@@ -504,41 +555,48 @@ void cmd_listdir(char *tr[]){
      * */
 
     bool longListing=false, link=false, acc=false, hid=false;
-    int i=0,j=0,k=0,rec=0;
+    int i=0,names=0,rec=0;
     /*rec=0 if no recursion
      *rec=1 if reca
-     *rec=2 if reb
+     *rec=2 if recb
      */
 
+    for (i = 0; i < 5; ++i) {
 
-    char *names[MAXLINEA / 2];
-
-    while(tr[i]!=NULL){
-        if(!strcmp(tr[i],"-long")){
+        if(tr[i]==NULL){
+            cmd_carpeta(tr+i);
+            return;
+        }
+        else if(!strcmp(tr[i],"-long") && !longListing){
             longListing=true;
-        } else if (!strcmp(tr[i],"-link")){
+        } else if (!strcmp(tr[i],"-link") && !link){
             link=true;
-        } else if (!strcmp(tr[i],"-acc")){
+        } else if (!strcmp(tr[i],"-acc") && !acc){
             acc=true;
-        } else if (!strcmp(tr[i],"-hid")){
+        } else if (!strcmp(tr[i],"-hid") && !hid){
             hid=true;
-        } else if (!strcmp(tr[i],"-reca")){
+        } else if (!strcmp(tr[i],"-reca") && rec==0){
             rec=1;
-        } else if (!strcmp(tr[i],"-recb")){
+        } else if (!strcmp(tr[i],"-recb") && rec==0){
             rec=2;
         } else{
-            names[j]=tr[i];
-            j++;
+            break;
         }
-        i++;
     }
-    names[j]=NULL;
 
-    /*
-     * Loop to display each file with printfile nose
-     * */
+    while (tr[i]!=NULL){
 
+        if(!isDir(tr[i])) printf("Unable to access %s: No such directory\n",tr[i]);
 
+        printDir(longListing, link, acc, hid, rec, tr[i]);
+
+        i++;
+        names++;
+    }
+
+    if (names==0) {
+        cmd_carpeta(tr+i);
+    }
 
 }
 
