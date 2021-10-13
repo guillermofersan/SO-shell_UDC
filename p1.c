@@ -302,6 +302,8 @@ bool isDir (const char *path) {
     } else return false;
 }
 
+
+
 bool isDir2(const char *path){
 
     struct stat str;
@@ -498,6 +500,27 @@ void cmd_listfich(char *tr[]){
 
 }
 
+bool DisplayDir(const char *path,bool hid){
+
+    DIR *d;
+    struct dirent *dirStruct;
+    int hidCount=0, nothidCount=0;
+
+    d= opendir(path);
+
+    if(d){
+        while ((dirStruct = readdir(d)) != NULL) {
+            if (dirStruct->d_name[0]=='.'){
+                hid++;
+            } else nothidCount++;
+        }
+    }
+
+    closedir(d);
+    if (hid) return (nothidCount+hid)>2;
+    else return nothidCount>0;
+}
+
 
 void printSubDirs(bool longlisting, bool link, bool acc, bool hid, int rec, char* path){
 
@@ -511,12 +534,11 @@ void printSubDirs(bool longlisting, bool link, bool acc, bool hid, int rec, char
         while ((dirStruct2 = readdir(d2)) != NULL) {
 
             sprintf(path2,"%s/%s",path,dirStruct2->d_name);
-            if((strcmp(dirStruct2->d_name,".")!=0 && strcmp(dirStruct2->d_name,"..")!=0) && (isDir(path2)) && (hid || dirStruct2->d_name[0]!='.')){
+            if((strcmp(dirStruct2->d_name,".")!=0 && strcmp(dirStruct2->d_name,"..")!=0) && (isDir(path2)) && DisplayDir(path2,hid) && (hid || dirStruct2->d_name[0]!='.')){
 
                 printDir(longlisting, link, acc,hid,rec, path2);
 
             }
-
         }
         closedir(d2);
     }
