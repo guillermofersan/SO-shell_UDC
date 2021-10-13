@@ -306,6 +306,18 @@ bool isDir (const char *path) {
     } else return false;
 }
 
+bool isDir2(const char *path){
+
+    struct stat str;
+
+    lstat(path, &str);
+
+    if(S_ISDIR(str.st_mode))
+        return true;
+    else return false;
+
+}
+
 void deleteDir(const char *path){
     /*precondition: path belongs to a real directory*/
     int i=0;
@@ -419,7 +431,7 @@ void printFile(bool longListing, bool link, bool acc, char* name){
             printf("%2lu (%lu) %s %s %s ",fileData.st_nlink, fileData.st_ino, getpwuid(fileData.st_uid)->pw_name, getpwuid(fileData.st_gid)->pw_name, ConvierteModo(fileData.st_mode));
         }
 
-        printf("%9ld %s",fileData.st_size, name);
+        printf("%9ld %s",fileData.st_size, basename(name));
 
         if(link && longListing){
 
@@ -482,22 +494,26 @@ void cmd_listfich(char *tr[]){
 
 void printSubDirs(bool longlisting, bool link, bool acc, bool hid, int rec, char* path){
 
-    DIR *d;
-    struct dirent *dirStruct;
+    DIR *d2;
+    struct dirent *dirStruct2;
+    char path2[MAXLINEA];
 
-    d = opendir(".");
 
-    if (d) {
-        while ((dirStruct = readdir(d)) != NULL) {
 
-            if((strcmp(dirStruct->d_name,".")!=0 && strcmp(dirStruct->d_name,"..")!=0) && (isDir(dirStruct->d_name)) && (hid || dirStruct->d_name[0]!='.')){
+    d2 = opendir(path);
 
-                printDir(longlisting, link, acc,hid,rec, dirStruct->d_name);
+    if (d2) {
+        while ((dirStruct2 = readdir(d2)) != NULL) {
+            sprintf(path2,"%s/%s",path,dirStruct2->d_name);
+
+            if((strcmp(dirStruct2->d_name,".")!=0 && strcmp(dirStruct2->d_name,"..")!=0) && (isDir(path2)) && (hid || dirStruct2->d_name[0]!='.')){
+
+                printDir(longlisting, link, acc,hid,rec, path2);
 
             }
 
         }
-        closedir(d);
+        closedir(d2);
     }
 
 
@@ -508,10 +524,12 @@ void printDir(bool longlisting, bool link, bool acc, bool hid, int rec, char* pa
     DIR *d;
     struct dirent *dirStruct;
     char Curdir[MAXLINEA];
-    strcpy(Curdir,getcwd(Curdir, MAXLINEA));
+    char path2[MAXLINEA];
 
-    if (chdir(path)!=-1){
-        d = opendir(".");
+    //strcpy(Curdir,getcwd(Curdir, MAXLINEA));
+
+    //if (chdir(path)!=-1){
+        d = opendir(path);
 
 
         if (d) {
@@ -522,18 +540,21 @@ void printDir(bool longlisting, bool link, bool acc, bool hid, int rec, char* pa
             printf("************%s\n", path);
             while ((dirStruct = readdir(d)) != NULL) {
                 if (hid || dirStruct->d_name[0]!='.'){
-                    printFile(longlisting, link, acc, dirStruct->d_name);
+                    sprintf(path2,"%s/%s",path,dirStruct->d_name);
+                    printFile(longlisting, link, acc, path2);
                 }
             }
 
             if(rec==1){
+
                 printSubDirs(longlisting, link, acc, hid, rec, path);
             }
         } else printf("Unable to access directory %s", path);
 
         closedir(d);
-        chdir(Curdir);
-    }
+        //chdir(Curdir);
+    //}
+
 
 
 }
