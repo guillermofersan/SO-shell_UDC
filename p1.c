@@ -33,6 +33,7 @@ bool iscmd;
 
 void ProcesarEntrada(char *tr[]);
 int trocearcadena(char * cadena, char * trozos[]);
+void printDir(bool, bool , bool , bool , int , char* );
 
 void cmd_autores(char **);
 void cmd_carpeta(char **);
@@ -268,7 +269,6 @@ void cmd_crear(char *tr[]){
                 printf("Unable to create file %s: File already exists\n",tr[1]);
 
             } else if (fopen (tr[1],"w")==NULL){
-
                 printf("Unable to create file %s: %s\n",tr[1],strerror(errno));
             }
         }
@@ -289,7 +289,9 @@ void cmd_borrar(char *tr[]){
 
     while (tr[i]!=NULL){
 
-            if (remove(tr[i])==-1) printf("Unable to delete %s: %s\n",tr[i], strerror(errno));
+        if (remove(tr[i])==-1) {
+            printf("Unable to delete %s: %s\n", tr[i], strerror(errno));
+        }
 
         i++;
     }
@@ -309,7 +311,6 @@ void deleteDir(const char *path){
     int i=0;
     DIR *d;
     struct dirent *dirStruct;
-    struct stat *fileStruct;
     char dir[MAXLINEA];
     char Curdir[MAXLINEA];
     strcpy(Curdir,getcwd(dir, MAXLINEA));
@@ -317,21 +318,21 @@ void deleteDir(const char *path){
     d = opendir(path);
 
     chdir(path);
-        if (d) {
-            while ((dirStruct = readdir(d)) != NULL) {
+    if (d) {
+        while ((dirStruct = readdir(d)) != NULL) {
 
-                if (strcmp(dirStruct->d_name,".")!=0 && strcmp(dirStruct->d_name,"..")!=0){
-                    printf("removing: %d->%s\n", i,dirStruct->d_name);
-                    i++;
-                    if (isDir(dirStruct->d_name)){
-                        deleteDir(dirStruct->d_name);
-                    }else{
-                        if (remove(dirStruct->d_name)==-1) printf("Unable to delete %s: %s",dirStruct->d_name, strerror(errno));
-                    }
+            if (strcmp(dirStruct->d_name,".")!=0 && strcmp(dirStruct->d_name,"..")!=0){
+                printf("removing: %d->%s\n", i,dirStruct->d_name);
+                i++;
+                if (isDir(dirStruct->d_name)){
+                    deleteDir(dirStruct->d_name);
+                }else{
+                    if (remove(dirStruct->d_name)==-1) printf("Unable to delete %s: %s",dirStruct->d_name, strerror(errno));
                 }
-             }
-                closedir(d);
+            }
         }
+        closedir(d);
+    }
 
     chdir(Curdir);
     if(remove(path)==-1){
@@ -400,7 +401,7 @@ void printFile(bool longListing, bool link, bool acc, char* name){
     struct tm tm;
     char linkName[1024];
 
-    if (!stat(name, &fileData)){
+    if (!lstat(name, &fileData)){
 
         if(longListing){
             if(acc){
@@ -415,10 +416,10 @@ void printFile(bool longListing, bool link, bool acc, char* name){
 
 
             //Solo falta terminar el espaciado y la tabulacion
-            printf("%lu (%lu) %s %s %s ",fileData.st_nlink, fileData.st_ino, getpwuid(fileData.st_uid)->pw_name, getpwuid(fileData.st_gid)->pw_name, ConvierteModo(fileData.st_mode));
+            printf("%2lu (%lu) %s %s %s ",fileData.st_nlink, fileData.st_ino, getpwuid(fileData.st_uid)->pw_name, getpwuid(fileData.st_gid)->pw_name, ConvierteModo(fileData.st_mode));
         }
 
-        printf("%ld %s",fileData.st_size, name);
+        printf("%9ld %s",fileData.st_size, name);
 
         if(link && longListing){
 
@@ -428,10 +429,8 @@ void printFile(bool longListing, bool link, bool acc, char* name){
         }
 
         printf("\n");
-    } else printf("Unable to access %s: %s\n",name,strerror(errno));
-
+    } else printf("cannot access %s: %s\n",name,strerror(errno));
 }
-
 
 
 void cmd_listfich(char *tr[]){
@@ -448,36 +447,96 @@ void cmd_listfich(char *tr[]){
      * */
 
     bool longListing=false, link=false, acc=false;
-    int i=0,j=0,k=0;
+    int i,names=0;
 
+    for (i = 0; i < 3; ++i) {
 
-    char *names[MAXLINEA / 2];
-
-    while(tr[i]!=NULL){
-        if(!strcmp(tr[i],"-long")){
+        if(tr[i]==NULL){
+            cmd_carpeta(tr+i);
+            return;
+        }
+        else if(!strcmp(tr[i],"-long")){
             longListing=true;
         } else if (!strcmp(tr[i],"-link")){
             link=true;
         } else if (!strcmp(tr[i],"-acc")){
             acc=true;
         } else{
-            names[j]=tr[i];
-            j++;
+            break;
         }
-        i++;
     }
-    names[j]=NULL;
-    if(j==0) {
+
+    while (tr[i]!=NULL){
+        printFile(longListing, link, acc, tr[i]);
+        i++;
+        names++;
+    }
+
+    if (names==0) {
         cmd_carpeta(tr+i);
-    } else{
-        while (names[k]!=NULL){
-            printFile(longListing, link, acc, names[k]);
-            k++;
-        }
+
     }
 
 }
 
+
+void printSubDirs(bool longlisting, bool link, bool acc, bool hid, int rec, char* path){
+
+    DIR *d;
+    struct dirent *dirStruct;
+
+    d = opendir(".");
+
+    if (d) {
+        while ((dirStruct = readdir(d)) != NULL) {
+
+            if((strcmp(dirStruct->d_name,".")!=0 && strcmp(dirStruct->d_name,"..")!=0) && (isDir(dirStruct->d_name)) && (hid || dirStruct->d_name[0]!='.')){
+
+                printDir(longlisting, link, acc,hid,rec, dirStruct->d_name);
+
+            }
+
+        }
+        closedir(d);
+    }
+
+
+}
+
+void printDir(bool longlisting, bool link, bool acc, bool hid, int rec, char* path){
+
+    DIR *d;
+    struct dirent *dirStruct;
+    char Curdir[MAXLINEA];
+    strcpy(Curdir,getcwd(Curdir, MAXLINEA));
+
+    if (chdir(path)!=-1){
+        d = opendir(".");
+
+
+        if (d) {
+            if(rec==2){
+                printSubDirs(longlisting, link, acc, hid, rec, path);
+            }
+
+            printf("************%s\n", path);
+            while ((dirStruct = readdir(d)) != NULL) {
+                if (hid || dirStruct->d_name[0]!='.'){
+                    printFile(longlisting, link, acc, dirStruct->d_name);
+                }
+            }
+
+            if(rec==1){
+                printSubDirs(longlisting, link, acc, hid, rec, path);
+            }
+        } else printf("Unable to access directory %s", path);
+
+        closedir(d);
+        chdir(Curdir);
+    }
+
+
+}
 
 void cmd_listdir(char *tr[]){
 
@@ -504,46 +563,48 @@ void cmd_listdir(char *tr[]){
      * */
 
     bool longListing=false, link=false, acc=false, hid=false;
-    int i=0,j=0,k=0,rec=0;
+    int i=0,names=0,rec=0;
     /*rec=0 if no recursion
      *rec=1 if reca
-     *rec=2 if reb
+     *rec=2 if recb
      */
 
+    for (i = 0; i < 5; ++i) {
 
-    char *names[MAXLINEA / 2];
-
-    while(tr[i]!=NULL){
-        if(!strcmp(tr[i],"-long")){
+        if(tr[i]==NULL){
+            cmd_carpeta(tr+i);
+            return;
+        }
+        else if(!strcmp(tr[i],"-long") && !longListing){
             longListing=true;
-        } else if (!strcmp(tr[i],"-link")){
+        } else if (!strcmp(tr[i],"-link") && !link){
             link=true;
-        } else if (!strcmp(tr[i],"-acc")){
+        } else if (!strcmp(tr[i],"-acc") && !acc){
             acc=true;
-        } else if (!strcmp(tr[i],"-hid")){
+        } else if (!strcmp(tr[i],"-hid") && !hid){
             hid=true;
-        } else if (!strcmp(tr[i],"-reca")){
+        } else if (!strcmp(tr[i],"-reca") && rec==0){
             rec=1;
-        } else if (!strcmp(tr[i],"-recb")){
+        } else if (!strcmp(tr[i],"-recb") && rec==0){
             rec=2;
         } else{
-            names[j]=tr[i];
-            j++;
+            break;
         }
-        i++;
     }
-    names[j]=NULL;
 
-    /*
-     * Loop to display each file with printfile nose
-     * */
+    while (tr[i]!=NULL){
 
+        if(!isDir(tr[i]))
+            printf("Unable to access %s: No such directory\n",tr[i]);
+        printDir(longListing, link, acc, hid, rec, tr[i]);
+        i++;
+        names++;
+    }
 
-
+    if (names==0) {
+        cmd_carpeta(tr+i);
+    }
 }
-
-
-
 
 
 int trocearcadena(char * cadena, char * trozos[]){
@@ -566,24 +627,19 @@ void ProcesarEntrada(char *tr[]){
     for (i = 0; C[i].cmdname != NULL; i++) {
 
         if (!strcmp(tr[0],C[i].cmdname)){
-           (*C[i].func)(tr+1);
-           found=true;
+            (*C[i].func)(tr+1);
+            found=true;
         }
-
     }
-
     if(!found) printf("command not found\n");
-
-
-
 }
 
 int main (int argc, char*argv[]) {
     char linea[MAXLINEA];
     char aux[MAXLINEA];
     char *tr[MAXLINEA / 2];
-    
-	
+
+
     createList(&list);
 
     while(1){
@@ -591,7 +647,7 @@ int main (int argc, char*argv[]) {
         fgets(linea, MAXLINEA, stdin);
         tItemL item;
 
-	/*an aux array is created to store linea, then the content of aux is copied into the list*/
+        /*an aux array is created to store linea, then the content of aux is copied into the list*/
         strcpy(aux, linea);
         aux[strlen(aux) - 1] = '\0';
 
