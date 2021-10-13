@@ -19,9 +19,7 @@
 #include <libgen.h>
 #include <pwd.h>
 #include <errno.h>
-
-
-
+#include <fcntl.h>
 #include "list.h"
 
 #define MAXLINEA 1024
@@ -258,6 +256,7 @@ void cmd_comando(char *nchar[]){
 
 void cmd_crear(char *tr[]){
 
+    int f;
 
     if(tr[0]==NULL) cmd_carpeta(tr);
     else if(!strcmp(tr[0],"-f")){
@@ -265,10 +264,7 @@ void cmd_crear(char *tr[]){
         else{
 
             /*FIND A BETTER WAY USING strerror AND JUST 1 SYSTEM CALL*/
-            if  (fopen (tr[1],"r")!=NULL){
-                printf("Unable to create file %s: File already exists\n",tr[1]);
-
-            } else if (fopen (tr[1],"w")==NULL){
+            if ((f = open(tr[1],O_CREAT | O_EXCL, 0750))==-1){
                 printf("Unable to create file %s: %s\n",tr[1],strerror(errno));
             }
         }
@@ -405,6 +401,17 @@ char * ConvierteModo (mode_t m)
 }
 
 
+char * getUsername(uid_t id){
+
+    struct passwd userInfo;
+    char *name;
+    name=(char *) malloc (12);
+
+    if(getpwuid(id)!=NULL) sprintf(name,"%s",getpwuid(id)->pw_name);
+    else sprintf(name,"%d",id);
+
+    return name;
+}
 
 void printFile(bool longListing, bool link, bool acc, char* name){
 
@@ -423,12 +430,12 @@ void printFile(bool longListing, bool link, bool acc, char* name){
             }
 
             tm = *localtime(&t);
+            //printf("Username:\n%s\n", getUsername(fileData.st_uid));
 
             printf("%04d/%02d/%02d-%02d:%02d ",tm.tm_year+1900,tm.tm_mon+1, tm.tm_mday,  tm.tm_hour, tm.tm_min);
 
-
             //Solo falta terminar el espaciado y la tabulacion
-            printf("%2lu (%lu) %s %s %s ",fileData.st_nlink, fileData.st_ino, getpwuid(fileData.st_uid)->pw_name, getpwuid(fileData.st_gid)->pw_name, ConvierteModo(fileData.st_mode));
+            printf("%2lu (%lu) %8s %8s %s ",fileData.st_nlink, fileData.st_ino, getUsername(fileData.st_uid), getUsername(fileData.st_gid), ConvierteModo(fileData.st_mode));
         }
 
         printf("%9ld %s",fileData.st_size, basename(name));
@@ -498,14 +505,12 @@ void printSubDirs(bool longlisting, bool link, bool acc, bool hid, int rec, char
     struct dirent *dirStruct2;
     char path2[MAXLINEA];
 
-
-
     d2 = opendir(path);
 
     if (d2) {
         while ((dirStruct2 = readdir(d2)) != NULL) {
-            sprintf(path2,"%s/%s",path,dirStruct2->d_name);
 
+            sprintf(path2,"%s/%s",path,dirStruct2->d_name);
             if((strcmp(dirStruct2->d_name,".")!=0 && strcmp(dirStruct2->d_name,"..")!=0) && (isDir(path2)) && (hid || dirStruct2->d_name[0]!='.')){
 
                 printDir(longlisting, link, acc,hid,rec, path2);
@@ -549,7 +554,7 @@ void printDir(bool longlisting, bool link, bool acc, bool hid, int rec, char* pa
 
                 printSubDirs(longlisting, link, acc, hid, rec, path);
             }
-        } else printf("Unable to access directory %s", path);
+        }
 
         closedir(d);
         //chdir(Curdir);
