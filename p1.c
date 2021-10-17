@@ -263,7 +263,7 @@ void cmd_crear(char *tr[]){
         if (tr[1]==NULL) cmd_carpeta(tr+1);
         else{
 
-            /*FIND A BETTER WAY USING strerror AND JUST 1 SYSTEM CALL*/
+
             if ((f = open(tr[1],O_CREAT | O_EXCL, 0750))==-1){
                 printf("Unable to create file %s: %s\n",tr[1],strerror(errno));
             }
@@ -277,22 +277,7 @@ void cmd_crear(char *tr[]){
     }
 }
 
-void cmd_borrar(char *tr[]){
-
-    int i=0;
-    FILE *f;
-    DIR *d;
-
-    while (tr[i]!=NULL){
-
-        if (remove(tr[i])==-1) {
-            printf("Unable to delete %s: %s\n", tr[i], strerror(errno));
-        }
-
-        i++;
-    }
-}
-
+/*
 bool isDir (const char *path) {
     DIR *d;
 
@@ -301,10 +286,10 @@ bool isDir (const char *path) {
         return true;
     } else return false;
 }
+ */
 
 
-
-bool isDir2(const char *path){
+bool isDir(const char *path){
 
     struct stat str;
 
@@ -315,6 +300,26 @@ bool isDir2(const char *path){
     else return false;
 
 }
+
+void cmd_borrar(char *tr[]){
+
+    int i=0;
+    FILE *f;
+    DIR *d;
+
+    while (tr[i]!=NULL){
+
+        if (isDir(tr[i])){
+             if (rmdir(tr[i])==-1) printf("Unable to delete %s: %s\n", tr[i], strerror(errno));
+        } else{
+            if (unlink(tr[i])==-1) printf("Unable to delete %s: %s\n", tr[i], strerror(errno));
+        }
+
+        i++;
+    }
+}
+
+
 
 void deleteDir(const char *path){
     /*precondition: path belongs to a real directory*/
@@ -337,7 +342,7 @@ void deleteDir(const char *path){
                 if (isDir(dirStruct->d_name)){
                     deleteDir(dirStruct->d_name);
                 }else{
-                    if (remove(dirStruct->d_name)==-1) printf("Unable to delete %s: %s",dirStruct->d_name, strerror(errno));
+                    if (unlink(dirStruct->d_name)==-1) printf("Unable to delete %s: %s",dirStruct->d_name, strerror(errno));
                 }
             }
         }
@@ -354,14 +359,12 @@ void deleteDir(const char *path){
 void cmd_borrarrec(char *tr[]){
 
     int i=0;
-    DIR *d;
 
     while (tr[i]!=NULL){
 
-        if((d= opendir(tr[i]))){
-            closedir(d);
-            if (remove(tr[i])==-1) deleteDir(tr[i]);
-        } else if (remove(tr[i])==-1) printf("Unable to delete %s: %s\n",tr[i], strerror(errno));
+        if(isDir(tr[i])){
+            deleteDir(tr[i]);
+        } else if (unlink(tr[i])==-1) printf("Unable to delete %s: %s\n",tr[i], strerror(errno));
 
         i++;
     }
@@ -500,7 +503,10 @@ void cmd_listfich(char *tr[]){
 
 }
 
-bool DisplayDir(const char *path,bool hid){
+
+/*
+
+ bool DisplayDir(const char *path,bool hid){
 
     DIR *d;
     struct dirent *dirStruct;
@@ -521,6 +527,9 @@ bool DisplayDir(const char *path,bool hid){
     else return nothidCount>0;
 }
 
+*/
+
+
 
 void printSubDirs(bool longlisting, bool link, bool acc, bool hid, int rec, char* path){
 
@@ -534,7 +543,7 @@ void printSubDirs(bool longlisting, bool link, bool acc, bool hid, int rec, char
         while ((dirStruct2 = readdir(d2)) != NULL) {
 
             sprintf(path2,"%s/%s",path,dirStruct2->d_name);
-            if((strcmp(dirStruct2->d_name,".")!=0 && strcmp(dirStruct2->d_name,"..")!=0) && (isDir(path2)) && DisplayDir(path2,hid) && (hid || dirStruct2->d_name[0]!='.')){
+            if((strcmp(dirStruct2->d_name,".")!=0 && strcmp(dirStruct2->d_name,"..")!=0) && (isDir(path2)) && (hid || dirStruct2->d_name[0]!='.')){
 
                 printDir(longlisting, link, acc,hid,rec, path2);
 
@@ -550,37 +559,33 @@ void printDir(bool longlisting, bool link, bool acc, bool hid, int rec, char* pa
 
     DIR *d;
     struct dirent *dirStruct;
-    char Curdir[MAXLINEA];
     char path2[MAXLINEA];
 
-    //strcpy(Curdir,getcwd(Curdir, MAXLINEA));
 
-    //if (chdir(path)!=-1){
-        d = opendir(path);
+    d = opendir(path);
 
 
-        if (d) {
-            if(rec==2){
-                printSubDirs(longlisting, link, acc, hid, rec, path);
-            }
+    if (d) {
+        if(rec==2){
+            printSubDirs(longlisting, link, acc, hid, rec, path);
+        }
 
-            printf("************%s\n", path);
-            while ((dirStruct = readdir(d)) != NULL) {
-                if (hid || dirStruct->d_name[0]!='.'){
-                    sprintf(path2,"%s/%s",path,dirStruct->d_name);
-                    printFile(longlisting, link, acc, path2);
-                }
-            }
-
-            if(rec==1){
-
-                printSubDirs(longlisting, link, acc, hid, rec, path);
+        printf("************%s\n", path);
+        while ((dirStruct = readdir(d)) != NULL) {
+            if (hid || dirStruct->d_name[0]!='.'){
+                sprintf(path2,"%s/%s",path,dirStruct->d_name);
+                printFile(longlisting, link, acc, path2);
             }
         }
 
-        closedir(d);
-        //chdir(Curdir);
-    //}
+        if(rec==1){
+
+            printSubDirs(longlisting, link, acc, hid, rec, path);
+        }
+    }
+
+    closedir(d);
+
 
 
 
