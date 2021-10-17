@@ -165,7 +165,18 @@ void cmd_ayuda(char *tr[]){
     else if(!strcmp(tr[0],"fin")) printf("fin: Ends the shell\n");
     else if(!strcmp(tr[0],"bye")) printf("bye: Ends the shell\n");
     else if(!strcmp(tr[0],"salir")) printf("salir: Ends the shell\n");
-    else if(!strcmp(tr[0],"crear")) printf("crear [-f] [name]: Creates a directory or file in the file system.\n\n\tcrear\t\t shows the current directory\n\tcrear [name]\t creates an empty directory with name [name]\n\tcrear -f [name]  creates an empty file with name [name]\n\n");
+    else if(!strcmp(tr[0],"crear")) printf("crear [-f] [name]: Creates a directory or file in the file system.\nIf no names are given, shows the current directory\n\n\tcrear [name]\t%s\n\tcrear -f [name]\t%s\n\n","creates an empty directory with name [name]","creates an empty file with name [name]");
+    else if(!strcmp(tr[0],"borrar")) printf("borrar name1 name2...: Deletes files and/or empty directories\n");
+    else if(!strcmp(tr[0],"borrarrec")) printf("borrarrec name1 name2...: Deletes files and/or non empty directories. If the directory is not empty it is deleted with all its contents\n");
+    else if(!strcmp(tr[0],"listfich")){
+        printf("listfich [-long] [-link] [-acc] name1 name2 name3...: Gives info on files, directories, etc. entered\nIf no options are given, it prints the size and the name of each file.\nIf no names are given it prints the current directory\n");
+        printf("\n\t-long\tprints the information in long listing mode\n\t-link\tif long is applied and the file is a symbolic link, the name of the file it points to is also printed \t\n\t-acc\tlast access time will be used instead of last modification time\n\n");
+    }
+    else if(!strcmp(tr[0],"listdir")){
+        printf("listdir [-reca] [-recb] [-hid] [-long] [-link] [-acc] name1 name2...: Lists the contents of directories with names name1, name2...\nIf no options are given, it prints the size and the name of each file.\nIf no names are given it prints the current directory\nIf the name inserted is a file, it prints the information about the ");
+        printf("\n\t-long\tprints the information in long listing mode\n\t-link\tif long is applied and the file is a symbolic link, the name of the file it points to is also printed \t\n\t-acc\tlast access time will be used instead of last modification time\n\n");
+        printf("\n\t-hid\thidden files and/or directories will also get listed\n\t-reca\tprints subdirectories and its content recursively after all the files in the directory\n\t-recb\tprints subdirectories and its content recursively before all the files in the directory");
+    }
     else printf("command not found\n");
 
 }
@@ -326,9 +337,8 @@ void deleteDir(const char *path){
     int i=0;
     DIR *d;
     struct dirent *dirStruct;
-    char dir[MAXLINEA];
     char Curdir[MAXLINEA];
-    strcpy(Curdir,getcwd(dir, MAXLINEA));
+    strcpy(Curdir,getcwd(Curdir, MAXLINEA));
 
     d = opendir(path);
 
@@ -350,7 +360,7 @@ void deleteDir(const char *path){
     }
 
     chdir(Curdir);
-    if(remove(path)==-1){
+    if(rmdir(path)==-1){
         printf("Unable to delete %s: %s\n",path, strerror(errno));
     }
 
@@ -648,7 +658,7 @@ void cmd_listdir(char *tr[]){
     while (tr[i]!=NULL){
 
         if(!isDir(tr[i]))
-            printf("Unable to access %s: No such directory\n",tr[i]);
+            printFile(longListing,link,acc,tr[i]);
         printDir(longListing, link, acc, hid, rec, tr[i]);
         i++;
         names++;
