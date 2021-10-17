@@ -273,11 +273,10 @@ void cmd_crear(char *tr[]){
     else if(!strcmp(tr[0],"-f")){
         if (tr[1]==NULL) cmd_carpeta(tr+1);
         else{
-
-
-            if ((f = open(tr[1],O_CREAT | O_EXCL, 0750))==-1){
+            if ((f = open(tr[1],O_CREAT | O_EXCL, 0777))==-1){
                 printf("Unable to create file %s: %s\n",tr[1],strerror(errno));
             }
+            close(f);
         }
     }
     else {
