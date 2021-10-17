@@ -20,7 +20,11 @@
 #include <pwd.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <grp.h>
+
+
 #include "list.h"
+
 
 #define MAXLINEA 1024
 #define st_atime st_atim.tv_sec
@@ -314,8 +318,6 @@ bool isDir(const char *path){
 void cmd_borrar(char *tr[]){
 
     int i=0;
-    FILE *f;
-    DIR *d;
 
     while (tr[i]!=NULL){
 
@@ -379,8 +381,8 @@ void cmd_borrarrec(char *tr[]){
     }
 }
 
-char LetraTF (mode_t m)
-{
+char LetraTF (mode_t m){
+
     switch (m&S_IFMT) { /*and bit a bit con los bits de formato,0170000 */
         case S_IFSOCK: return 's'; /*socket */
         case S_IFLNK: return 'l'; /*symbolic link*/
@@ -417,14 +419,26 @@ char * ConvierteModo (mode_t m)
 
 char * getUsername(uid_t id){
 
-    struct passwd userInfo;
-    char *name;
-    name=(char *) malloc (12);
+    struct passwd *userInfo;
+    char *name[32];
 
-    if(getpwuid(id)!=NULL) sprintf(name,"%s",getpwuid(id)->pw_name);
-    else sprintf(name,"%d",id);
+    if(getpwuid(id)!=NULL) return getpwuid(id)->pw_name;
+    else {
+        sprintf(*name, "%d", id);
+        return *name;
+    }
+}
 
-    return name;
+char * getGroupname(uid_t id){
+
+    struct group *groupInfo;
+    char *name[32];
+
+    if(getgrgid(id)!=NULL) return getgrgid(id)->gr_name;
+    else {
+        sprintf(*name, "%d", id);
+        return *name;
+    }
 }
 
 void printFile(bool longListing, bool link, bool acc, char* name){
@@ -449,7 +463,7 @@ void printFile(bool longListing, bool link, bool acc, char* name){
             printf("%04d/%02d/%02d-%02d:%02d ",tm.tm_year+1900,tm.tm_mon+1, tm.tm_mday,  tm.tm_hour, tm.tm_min);
 
             //Solo falta terminar el espaciado y la tabulacion
-            printf("%2lu (%lu) %8s %8s %s ",fileData.st_nlink, fileData.st_ino, getUsername(fileData.st_uid), getUsername(fileData.st_gid), ConvierteModo(fileData.st_mode));
+            printf("%2lu (%lu) %8s %8s %s ",fileData.st_nlink, fileData.st_ino, getUsername(fileData.st_uid), getGroupname(fileData.st_gid), ConvierteModo(fileData.st_mode));
         }
 
         printf("%9ld %s",fileData.st_size, basename(name));
