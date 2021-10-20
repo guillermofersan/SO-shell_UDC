@@ -16,7 +16,6 @@
 #include <sys/types.h>
 #include <dirent.h>
 #include <fcntl.h>
-#include <unistd.h>
 #include <libgen.h>
 #include <pwd.h>
 #include <errno.h>
@@ -279,11 +278,14 @@ void cmd_crear(char *tr[]){
 bool isDir(const char *path){
 /*aux function to check if a path corresponds to a directory*/
     struct stat str;
-    lstat(path, &str);
-
-    if(S_ISDIR(str.st_mode))
-        return true;
+    if(lstat(path, &str)!=-1) {
+        if(S_ISDIR(str.st_mode))
+            return true;
+        else return false;
+    }
     else return false;
+
+
 }
 
 
@@ -370,23 +372,23 @@ char LetraTF (mode_t m){
 
 char * ConvierteModo (mode_t m){
 /*Auxiliar function to return the permisions of a file passing its mode_t as argument*/
-    char * permisos;
-    permisos=(char *) malloc (12);
-    strcpy (permisos,"---------- ");
-    permisos[0]=LetraTF(m);
-    if (m&S_IRUSR) permisos[1]='r'; /*propietario*/
-    if (m&S_IWUSR) permisos[2]='w';
-    if (m&S_IXUSR) permisos[3]='x';
-    if (m&S_IRGRP) permisos[4]='r'; /*grupo*/
-    if (m&S_IWGRP) permisos[5]='w';
-    if (m&S_IXGRP) permisos[6]='x';
-    if (m&S_IROTH) permisos[7]='r'; /*resto*/
-    if (m&S_IWOTH) permisos[8]='w';
-    if (m&S_IXOTH) permisos[9]='x';
-    if (m&S_ISUID) permisos[3]='s'; /*setuid, setgid y stickybit*/
-    if (m&S_ISGID) permisos[6]='s';
-    if (m&S_ISVTX) permisos[9]='t';
-    return (permisos);
+
+    static char permisos2[12];
+    strcpy (permisos2,"---------- ");
+    permisos2[0]=LetraTF(m);
+    if (m&S_IRUSR) permisos2[1]='r'; /*propietario*/
+    if (m&S_IWUSR) permisos2[2]='w';
+    if (m&S_IXUSR) permisos2[3]='x';
+    if (m&S_IRGRP) permisos2[4]='r'; /*grupo*/
+    if (m&S_IWGRP) permisos2[5]='w';
+    if (m&S_IXGRP) permisos2[6]='x';
+    if (m&S_IROTH) permisos2[7]='r'; /*resto*/
+    if (m&S_IWOTH) permisos2[8]='w';
+    if (m&S_IXOTH) permisos2[9]='x';
+    if (m&S_ISUID) permisos2[3]='s'; /*setuid, setgid y stickybit*/
+    if (m&S_ISGID) permisos2[6]='s';
+    if (m&S_ISVTX) permisos2[9]='t';
+    return (permisos2);
 }
 
 void printTimeFormat(time_t t){
@@ -404,7 +406,7 @@ void printFile(bool longListing, bool link, bool acc, char* name){
     struct passwd *userInfo;
     struct group *groupInfo;
 
-    char linkName[MAXLINEA], userName[NAMEMAX], groupName[NAMEMAX];
+    char linkName[MAXLINEA]="", userName[NAMEMAX], groupName[NAMEMAX];
 
     if (!lstat(name, &fileData)){
 
@@ -421,7 +423,9 @@ void printFile(bool longListing, bool link, bool acc, char* name){
             if((groupInfo = getgrgid(fileData.st_gid))!=NULL) sprintf(groupName,"%s",groupInfo->gr_name);
             else sprintf(groupName,"%d",fileData.st_gid);
 
-            printf("%2lu (%lu) %8s %8s %s ",fileData.st_nlink, fileData.st_ino, userName, groupName, ConvierteModo(fileData.st_mode));
+            printf("%2lu (%lu)",fileData.st_nlink, fileData.st_ino);
+            printf(" %8s %8s ",userName, groupName);
+            printf("%s ", ConvierteModo(fileData.st_mode));
         }
 
         printf("%9ld %s",fileData.st_size, basename(name));
@@ -531,7 +535,7 @@ void cmd_listdir(char *tr[]){
 /*function to perform the listdir command*/
 
     bool longListing=false, link=false, acc=false, hid=false;
-    int i=0,names=0,rec=0;
+    int i,names=0,rec=0;
     /*rec=0 if no recursion
      *rec=1 if reca
      *rec=2 if recb
@@ -563,7 +567,10 @@ void cmd_listdir(char *tr[]){
 
         if(!isDir(tr[i]))
             printFile(longListing,link,acc,tr[i]);
-        printDir(longListing, link, acc, hid, rec, tr[i]);
+        else{
+            printDir(longListing, link, acc, hid, rec, tr[i]);
+        }
+
         i++;
         names++;
     }
