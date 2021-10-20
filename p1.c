@@ -15,14 +15,12 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <dirent.h>
+#include <fcntl.h>
 #include <unistd.h>
 #include <libgen.h>
 #include <pwd.h>
 #include <errno.h>
-#include <fcntl.h>
 #include <grp.h>
-
-
 #include "list.h"
 
 
@@ -322,7 +320,7 @@ void cmd_borrar(char *tr[]){
     while (tr[i]!=NULL){
 
         if (isDir(tr[i])){
-             if (rmdir(tr[i])==-1) printf("Unable to delete %s: %s\n", tr[i], strerror(errno));
+            if (rmdir(tr[i])==-1) printf("Unable to delete %s: %s\n", tr[i], strerror(errno));
         } else{
             if (unlink(tr[i])==-1) printf("Unable to delete %s: %s\n", tr[i], strerror(errno));
         }
@@ -395,11 +393,11 @@ char LetraTF (mode_t m){
     }
 }
 
-char * ConvierteModo (mode_t m)
-{
+char * ConvierteModo (mode_t m){
+
     char * permisos;
     permisos=(char *) malloc (12);
-    strcpy (permisos,"----------");
+    strcpy (permisos,"---------- ");
     permisos[0]=LetraTF(m);
     if (m&S_IRUSR) permisos[1]='r'; /*propietario*/
     if (m&S_IWUSR) permisos[2]='w';
@@ -417,62 +415,47 @@ char * ConvierteModo (mode_t m)
 }
 
 
-char * getUsername(uid_t id){
-
-    struct passwd *userInfo;
-    char *name[32];
-
-    if(getpwuid(id)!=NULL) return getpwuid(id)->pw_name;
-    else {
-        sprintf(*name, "%d", id);
-        return *name;
-    }
-}
-
-char * getGroupname(uid_t id){
-
-    struct group *groupInfo;
-    char *name[32];
-
-    if(getgrgid(id)!=NULL) return getgrgid(id)->gr_name;
-    else {
-        sprintf(*name, "%d", id);
-        return *name;
-    }
+void printTimeFormat(time_t t){
+    struct tm tm;
+    tm = *localtime(&t);
+    printf("%04d/%02d/%02d-%02d:%02d ",tm.tm_year+1900,tm.tm_mon+1, tm.tm_mday,  tm.tm_hour, tm.tm_min);
 }
 
 void printFile(bool longListing, bool link, bool acc, char* name){
 
     struct stat fileData;
-    time_t t;
-    struct tm tm;
-    char linkName[1024];
+
+    struct passwd *userInfo;
+    struct group *groupInfo;
+
+    char linkName[1024], userName[32], groupName[32];
 
     if (!lstat(name, &fileData)){
 
         if(longListing){
             if(acc){
-                t=fileData.st_atime;
+                printTimeFormat(fileData.st_atime);
             } else {
-                t=fileData.st_mtime;
+                printTimeFormat(fileData.st_mtime);
             }
 
-            tm = *localtime(&t);
-            //printf("Username:\n%s\n", getUsername(fileData.st_uid));
+            if((userInfo = getpwuid(fileData.st_uid))!=NULL) sprintf(userName,"%s",userInfo->pw_name);
+            else sprintf(userName,"%d",fileData.st_uid);
 
-            printf("%04d/%02d/%02d-%02d:%02d ",tm.tm_year+1900,tm.tm_mon+1, tm.tm_mday,  tm.tm_hour, tm.tm_min);
+            if((groupInfo = getgrgid(fileData.st_gid))!=NULL) sprintf(groupName,"%s",groupInfo->gr_name);
+            else sprintf(groupName,"%d",fileData.st_gid);
 
-            //Solo falta terminar el espaciado y la tabulacion
-            printf("%2lu (%lu) %8s %8s %s ",fileData.st_nlink, fileData.st_ino, getUsername(fileData.st_uid), getGroupname(fileData.st_gid), ConvierteModo(fileData.st_mode));
+            printf("%2lu (%lu) %8s %8s %s ",fileData.st_nlink, fileData.st_ino, userName, groupName, ConvierteModo(fileData.st_mode));
         }
 
         printf("%9ld %s",fileData.st_size, basename(name));
 
-        if(link && longListing){
+        if(link && longListing && S_ISLNK(fileData.st_mode)){
 
             if ((readlink(name, linkName, sizeof(linkName)-1)) != -1){
                 printf("->%s", basename(linkName));
-            }
+            } else
+                printf("Cannot access link: %s", strerror(errno));
         }
 
         printf("\n");
@@ -602,7 +585,6 @@ void printDir(bool longlisting, bool link, bool acc, bool hid, int rec, char* pa
         }
 
         if(rec==1){
-
             printSubDirs(longlisting, link, acc, hid, rec, path);
         }
     }
@@ -615,28 +597,6 @@ void printDir(bool longlisting, bool link, bool acc, bool hid, int rec, char* pa
 }
 
 void cmd_listdir(char *tr[]){
-
-    /*
-     * If file, use printFile
-     * if no name
-     *
-     * none: size and name of each file
-     * longListing: print out the date of last modification (in format YYYY/MM/DD-HH:mm), number of links,
-     *              owner, group, mode (drwx format), size and name of the file.
-     *              date number of links (inode number) owner group mode size name
-     * link: only for long listing: if the file is a symbolic link the name of the file it points is printed as well
-     *       date number of links (inode number) owner group mode size name->file the link points to
-     *
-     * acc: last access time will be used instead of last modification time
-     *
-     * hid: hidden files and directories are also listed
-     *
-     *reca:  when listing a directory’s contents, subdirectories will be listed recursively AFTER all the files in the directory.
-     *       (if the -hid option is also given, hidden subdirectories will also get listed, except . and .. to avoid infinite recursion).
-     *
-     *recb: same as reca but contents are listed before the files in the directory
-     *
-     * */
 
     bool longListing=false, link=false, acc=false, hid=false;
     int i=0,names=0,rec=0;
@@ -667,7 +627,6 @@ void cmd_listdir(char *tr[]){
             break;
         }
     }
-
     while (tr[i]!=NULL){
 
         if(!isDir(tr[i]))
