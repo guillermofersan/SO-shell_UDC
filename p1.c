@@ -145,10 +145,9 @@ void cmd_infosis(char *tr[]){
     printf("%s (%s), OS: %s-%s-%s\n",infosis.nodename,infosis.machine,infosis.sysname,infosis.release, infosis.version);
 }
 
-
 void cmd_ayuda(char *tr[]){
 /*prints help for different commands*/
-    if(tr[0]==NULL) printf("Available commands:\n->autores\n->pid\n->carpeta\n->fecha\n->hist\n->comando\n->infosis\n->fin\n->salir\n->bye\n");
+    if(tr[0]==NULL) printf("Avaiable commands:\n-> autores\n-> ayuda\n-> borrar\n-> borrarrec\n-> bye\n-> carpeta\n-> comando\n-> crear\n-> fecha\n-> fin\n-> hist\n-> infosis\n-> listdir\n-> listfich\n-> pid\n-> salir\n");
     else if(!strcmp(tr[0],"autores")) printf("autores [-l] [-n]: Prints the names and logins of the program authors.\n\n\t-l\tprints only the logins of the authors.\n\t-n\tprints only the names of the authors.\n\n");
     else if(!strcmp(tr[0],"pid")) printf("pid [-p]: Prints the pid of the process executing the shell.\n\n\t-p\tprints the pid of the shell’s parent process.\n\n");
     else if(!strcmp(tr[0],"carpeta")) printf("carpeta [direct]: Changes the current working directory of the shell to direct. When invoked without auguments it prints the current working directory.\n");
@@ -237,7 +236,6 @@ void cmd_comando(char *nchar[]){
                 break;
             }
 
-
         }
         if(pos!=NULL){
             item = getItem(pos, list);
@@ -293,6 +291,11 @@ void cmd_borrar(char *tr[]){
 /*Deletes an element*/
     int i=0;
 
+    if (tr[i]==NULL) {
+        cmd_carpeta(tr);
+        return;
+    }
+
     while (tr[i]!=NULL){
 
         if (isDir(tr[i])){
@@ -300,14 +303,13 @@ void cmd_borrar(char *tr[]){
         } else{
             if (unlink(tr[i])==-1) printf("Unable to delete %s: %s\n", tr[i], strerror(errno));
         }
-
         i++;
     }
 }
 
 
 void deleteDir(const char *path){
-/* precondition: path belongs to a real directory
+/*
  * function deletes recursively a directory with all its files
  * */
     int i=0;
@@ -345,6 +347,11 @@ void cmd_borrarrec(char *tr[]){
 
     int i=0;
 
+    if (tr[i]==NULL) {
+        cmd_carpeta(tr);
+        return;
+    }
+
     while (tr[i]!=NULL){
 
         if(isDir(tr[i])){
@@ -357,15 +364,15 @@ void cmd_borrarrec(char *tr[]){
 
 char LetraTF (mode_t m){
 /*Auxiliar function to ConvierteModo*/
-    switch (m&S_IFMT) { /*and bit a bit con los bits de formato,0170000 */
+    switch (m&S_IFMT) { /*and bit a bit con los bits de formato, 0170000 */
         case S_IFSOCK: return 's'; /*socket */
         case S_IFLNK: return 'l'; /*symbolic link*/
-        case S_IFREG: return '-'; /* fichero normal*/
+        case S_IFREG: return '-'; /* regular file*/
         case S_IFBLK: return 'b'; /*block device*/
-        case S_IFDIR: return 'd'; /*directorio */
+        case S_IFDIR: return 'd'; /*directory */
         case S_IFCHR: return 'c'; /*char device*/
         case S_IFIFO: return 'p'; /*pipe*/
-        default: return '?';/*desconocido, no deberia aparecer*/
+        default: return '?';/*unknown (shouldn't appear)*/
     }
 }
 
@@ -376,13 +383,13 @@ char * ConvierteModo (mode_t m){
     static char permisos2[12];
     strcpy (permisos2,"---------- ");
     permisos2[0]=LetraTF(m);
-    if (m&S_IRUSR) permisos2[1]='r'; /*propietario*/
+    if (m&S_IRUSR) permisos2[1]='r'; /*owner*/
     if (m&S_IWUSR) permisos2[2]='w';
     if (m&S_IXUSR) permisos2[3]='x';
-    if (m&S_IRGRP) permisos2[4]='r'; /*grupo*/
+    if (m&S_IRGRP) permisos2[4]='r'; /*group*/
     if (m&S_IWGRP) permisos2[5]='w';
     if (m&S_IXGRP) permisos2[6]='x';
-    if (m&S_IROTH) permisos2[7]='r'; /*resto*/
+    if (m&S_IROTH) permisos2[7]='r'; /*rest*/
     if (m&S_IWOTH) permisos2[8]='w';
     if (m&S_IXOTH) permisos2[9]='x';
     if (m&S_ISUID) permisos2[3]='s'; /*setuid, setgid y stickybit*/
