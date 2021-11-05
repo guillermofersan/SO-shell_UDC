@@ -14,14 +14,19 @@
 #include <sys/utsname.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <sys/mman.h>
 #include <dirent.h>
 #include <fcntl.h>
+#include <unistd.h>
 #include <libgen.h>
 #include <pwd.h>
 #include <errno.h>
 #include <grp.h>
-#include "list.h"
+#include <sys/shm.h>
 
+
+#include "list.h"
+#include "memlist.h"
 
 #define MAXLINEA 1024
 #define NAMEMAX 32
@@ -31,6 +36,7 @@
 /*GLOBAL VARIABLES*/
 tList list;
 bool iscmd;
+memList memlist;
 
 
 void ProcesarEntrada(char *tr[]);
@@ -51,7 +57,15 @@ void cmd_borrar(char **);
 void cmd_borrarrec(char **);
 void cmd_listfich(char **);
 void cmd_listdir(char **);
-
+void cmd_malloc(char **);
+void cmd_mmap(char **);
+void cmd_shared(char **);
+void cmd_dealloc(char **);
+void cmd_memoria(char **);
+void cmd_volcarmem(char **);
+void cmd_llenarmem(char **);
+void cmd_recursiva(char **);
+void cmd_e_s(char **);
 
 
 struct CMD{
@@ -77,6 +91,15 @@ struct CMD C[]={
         {"borrarrec", cmd_borrarrec},
         {"listfich", cmd_listfich},
         {"listdir", cmd_listdir},
+        {"malloc", cmd_malloc},
+        {"mmap", cmd_mmap},
+        {"shared", cmd_shared},
+        {"dealloc", cmd_dealloc},
+        {"memoria", cmd_memoria},
+        {"volcarmem", cmd_volcarmem},
+        {"llenarmem", cmd_llenarmem},
+        {"recursiva", cmd_recursiva},
+        {"e-s", cmd_e_s},
         {NULL ,NULL}
 };
 
@@ -114,7 +137,7 @@ void cmd_carpeta(char *tr[]){
     else{
         if(chdir(tr[0]) == -1){
             printf("Cannot change dir %s: %s\n", tr[0], strerror(errno));
-        } else printf("New current directory: %s\n",getcwd(dir, MAXLINEA));
+        }
     }
 }
 
@@ -148,9 +171,9 @@ void cmd_infosis(char *tr[]){
 
 void cmd_ayuda(char *tr[]){
 /*prints help for different commands*/
-    if(tr[0]==NULL) printf("Available commands:\n->autores\n->pid\n->carpeta\n->fecha\n->hist\n->comando\n->infosis\n->fin\n->salir\n->bye\n");
-    else if(!strcmp(tr[0],"autores")) printf("autores [-l] [-n]: Prints the names and logins of the program authors.\n\n\t-l\tprints only the logins of the authors.\n\t-n\tprints only the names of the authors.\n\n");
-    else if(!strcmp(tr[0],"pid")) printf("pid [-p]: Prints the pid of the process executing the shell.\n\n\t-p\tprints the pid of the shell’s parent process.\n\n");
+    if(tr[0]==NULL) printf("Avaiable commands:\n-> autores\n-> ayuda\n-> borrar\n-> borrarrec\n-> bye\n-> carpeta\n-> comando\n-> crear\n-> dealloc\n-> e-s\n-> fecha\n-> fin\n-> hist\n-> infosis\n-> listdir\n-> listfich\n-> llenarmem\n-> malloc\n-> memoria\n-> mmap\n-> pid\n-> recursiva\n-> salir\n-> shared\n-> volcarmem\n");
+    else if(!strcmp(tr[0],"autores")) printf("autores [-l|-n]: Prints the names and logins of the program authors.\n");
+    else if(!strcmp(tr[0],"pid")) printf("pid [-p]: Prints the pid of the process executing the shell.\n");
     else if(!strcmp(tr[0],"carpeta")) printf("carpeta [direct]: Changes the current working directory of the shell to direct. When invoked without auguments it prints the current working directory.\n");
     else if(!strcmp(tr[0],"fecha")) printf("fecha [-d] [-h]: Prints both the current date and the current time.\n\n\t-d\tprints the current date in the format DD/MM/YYYY.\n\t-h\tprints the current time in the format hh:mm:ss.\n\n");
     else if(!strcmp(tr[0],"hist")) printf("hist [-c][-N]: Shows the historic of commands executed by this shell in order.\n\n\t-c\tclears the historic.\n\t-N\tprints the first N comands\n\n");
@@ -237,7 +260,6 @@ void cmd_comando(char *nchar[]){
                 break;
             }
 
-
         }
         if(pos!=NULL){
             item = getItem(pos, list);
@@ -293,6 +315,11 @@ void cmd_borrar(char *tr[]){
 /*Deletes an element*/
     int i=0;
 
+    if (tr[i]==NULL) {
+        cmd_carpeta(tr);
+        return;
+    }
+
     while (tr[i]!=NULL){
 
         if (isDir(tr[i])){
@@ -300,14 +327,13 @@ void cmd_borrar(char *tr[]){
         } else{
             if (unlink(tr[i])==-1) printf("Unable to delete %s: %s\n", tr[i], strerror(errno));
         }
-
         i++;
     }
 }
 
 
 void deleteDir(const char *path){
-/* precondition: path belongs to a real directory
+/*
  * function deletes recursively a directory with all its files
  * */
     int i=0;
@@ -345,6 +371,11 @@ void cmd_borrarrec(char *tr[]){
 
     int i=0;
 
+    if (tr[i]==NULL) {
+        cmd_carpeta(tr);
+        return;
+    }
+
     while (tr[i]!=NULL){
 
         if(isDir(tr[i])){
@@ -357,15 +388,15 @@ void cmd_borrarrec(char *tr[]){
 
 char LetraTF (mode_t m){
 /*Auxiliar function to ConvierteModo*/
-    switch (m&S_IFMT) { /*and bit a bit con los bits de formato,0170000 */
+    switch (m&S_IFMT) { /*and bit a bit con los bits de formato, 0170000 */
         case S_IFSOCK: return 's'; /*socket */
         case S_IFLNK: return 'l'; /*symbolic link*/
-        case S_IFREG: return '-'; /* fichero normal*/
+        case S_IFREG: return '-'; /* regular file*/
         case S_IFBLK: return 'b'; /*block device*/
-        case S_IFDIR: return 'd'; /*directorio */
+        case S_IFDIR: return 'd'; /*directory */
         case S_IFCHR: return 'c'; /*char device*/
         case S_IFIFO: return 'p'; /*pipe*/
-        default: return '?';/*desconocido, no deberia aparecer*/
+        default: return '?';/*unknown (shouldn't appear)*/
     }
 }
 
@@ -376,13 +407,13 @@ char * ConvierteModo (mode_t m){
     static char permisos2[12];
     strcpy (permisos2,"---------- ");
     permisos2[0]=LetraTF(m);
-    if (m&S_IRUSR) permisos2[1]='r'; /*propietario*/
+    if (m&S_IRUSR) permisos2[1]='r'; /*owner*/
     if (m&S_IWUSR) permisos2[2]='w';
     if (m&S_IXUSR) permisos2[3]='x';
-    if (m&S_IRGRP) permisos2[4]='r'; /*grupo*/
+    if (m&S_IRGRP) permisos2[4]='r'; /*group*/
     if (m&S_IWGRP) permisos2[5]='w';
     if (m&S_IXGRP) permisos2[6]='x';
-    if (m&S_IROTH) permisos2[7]='r'; /*resto*/
+    if (m&S_IROTH) permisos2[7]='r'; /*rest*/
     if (m&S_IWOTH) permisos2[8]='w';
     if (m&S_IXOTH) permisos2[9]='x';
     if (m&S_ISUID) permisos2[3]='s'; /*setuid, setgid y stickybit*/
@@ -391,11 +422,14 @@ char * ConvierteModo (mode_t m){
     return (permisos2);
 }
 
-void printTimeFormat(time_t t){
-/*auxiliar function to printFile that prints a time_t type time in a correct format*/
+void printTimeFormat(time_t t, int i){
     struct tm tm;
     tm = *localtime(&t);
-    printf("%04d/%02d/%02d-%02d:%02d ",tm.tm_year+1900,tm.tm_mon+1, tm.tm_mday,  tm.tm_hour, tm.tm_min);
+    if (i==1){
+        printf("%04d/%02d/%02d-%02d:%02d ",tm.tm_year+1900,tm.tm_mon+1, tm.tm_mday,  tm.tm_hour, tm.tm_min);
+    } else if (i==2){
+        printf("%s", ctime(&t));
+    }
 }
 
 
@@ -412,9 +446,9 @@ void printFile(bool longListing, bool link, bool acc, char* name){
 
         if(longListing){
             if(acc){
-                printTimeFormat(fileData.st_atime);
+                printTimeFormat(fileData.st_atime,1);
             } else {
-                printTimeFormat(fileData.st_mtime);
+                printTimeFormat(fileData.st_mtime,1);
             }
 
             if((userInfo = getpwuid(fileData.st_uid))!=NULL) sprintf(userName,"%s",userInfo->pw_name);
@@ -580,6 +614,402 @@ void cmd_listdir(char *tr[]){
     }
 }
 
+/* LAB ASSIGNMENT 2 FUNCTIONS*/
+
+void mallocPrint(){
+    tItemMem item;
+    memPos p = memFirst(memlist);
+    printf("******Lista de bloques asignados malloc para el proceso %d\n",getpid());
+    while (p!=NULL){
+
+        item= getMemItem(p,memlist);
+        if (item.type=='1'){
+            printf("%p: size:%zu. malloc ",item.address,item.size);
+            printTimeFormat(item.time,2);
+        }
+
+        p= memNext(p,memlist);
+    }
+}
+
+void mallocFree(char *tr[]){
+
+    memPos p;
+    tItemMem it;
+    size_t size;
+    bool deleted = false;
+
+    if (tr[0]==NULL) {
+        mallocPrint();
+        return;
+    }
+
+    size = strtol(tr[0], NULL, 10);
+    p= memFirst(memlist);
+    while (p!=NULL){
+
+        it= getMemItem(p,memlist);
+        if (it.type=='1'){
+            if (it.size==size){
+                printf("deallocated %zu bytes at %p\n",size,it.address);
+                free(it.address);
+                deleteAtMemPosition(p,&memlist);
+                deleted=true;
+                break;
+            }
+        }
+        p = memNext(p,memlist);
+    }
+    if(!deleted)
+        mallocPrint();
+}
+
+void cmd_malloc(char *tr[]){
+/* malloc [-free] [tam] The shell allocates tam bytes using
+ * malloc and shows the memory address returned by malloc.*/
+    size_t size;
+    tItemMem item;
+
+    void *address;
+
+    if(tr[0]==NULL){
+        mallocPrint();
+
+    } else if (!strcmp(tr[0],"-free")){
+
+
+        mallocFree(tr+1);
+
+
+    } else{
+
+
+        size = strtol(tr[0], NULL, 10);
+        if (size==0) {
+            printf("No se asignan bloques de 0 bytes\n");
+            return;
+        }
+
+        if ( (address = malloc(size)) == NULL )
+            printf("Imposible obtener memoria con malloc: %s\n", strerror(errno));
+        else{
+            printf("allocated %zu at %p\n",size,address);
+
+            item.address=address;
+            item.time=time(NULL);
+            item.type='1';
+            item.size=size;
+
+            insertMemItem(item,&memlist);
+        }
+    }
+}
+
+void mMapPrint(){
+    tItemMem item;
+    memPos p = memFirst(memlist);
+
+    printf("******Lista de bloques asignados mmap para el proceso %d\n",getpid());
+    while (p!=NULL){
+
+        item= getMemItem(p,memlist);
+        if (item.type=='2'){
+            printf("%p: size:%zu. mmap %s (fd:%d) ",item.address,item.size,item.data.fileName,item.data.fd);
+            printTimeFormat(item.time,2);
+
+        }
+
+        p= memNext(p,memlist);
+    }
+}
+
+void * MmapFile (char * fichero, int protection){
+/*auxiliary function to cmd_mmap which maps a file*/
+
+    int df, map=MAP_PRIVATE, modo=O_RDONLY;
+    struct stat s;
+    void *p;
+    tItemMem item;
+    if (protection&PROT_WRITE) modo=O_RDWR;
+    if (stat(fichero,&s)==-1 || (df=open(fichero, modo))==-1)
+        return NULL;
+    if ( (p=mmap(NULL,s.st_size, protection,map,df,0) )==MAP_FAILED)
+        return NULL;
+    item.address=p;
+    item.size=s.st_size;
+    item.type='2';
+    item.time=time(NULL);
+    item.data.fd=df;
+    strcpy(item.data.fileName,fichero);
+
+    insertMemItem(item,&memlist);
+
+    return p;
+}
+
+void mmapFree(char *tr[]){
+    tItemMem item;
+    memPos pos;
+    bool deleted = false;
+
+    if (tr[0]==NULL){
+        mMapPrint();
+        return;
+    }
+    pos= memFirst(memlist);
+    while (pos!=NULL){
+
+        item= getMemItem(pos,memlist);
+        if (item.type=='2'){
+            if (!strcmp(item.data.fileName,tr[0])){
+
+                munmap(item.address,item.size);
+                close(item.data.fd);
+
+                deleteAtMemPosition(pos,&memlist);
+                deleted=true;
+                break;
+            }
+        }
+        pos = memNext(pos,memlist);
+    }
+    if(!deleted)
+        mMapPrint();
+}
+
+void cmd_mmap (char *tr[]){
+/*Function to perform the mmap command*/
+
+    char *perm;
+    void *p;
+    int protection=0;
+
+
+    if (tr[0]==NULL){
+        mMapPrint();
+        return;
+    }
+
+    if  (!strcmp(tr[0],"-free")){
+        mmapFree(tr+1);
+        return;
+    }
+
+    if ((perm=tr[1])!=NULL && strlen(perm)<4) {
+        if (strchr(perm,'r')!=NULL) protection|=PROT_READ;
+        if (strchr(perm,'w')!=NULL) protection|=PROT_WRITE;
+        if (strchr(perm,'x')!=NULL) protection|=PROT_EXEC;
+    }
+    if ((p=MmapFile(tr[0],protection))==NULL)
+        printf("Impossible to map file: %s\n", strerror(errno));
+    else{
+        printf ("file %s mapped in %p\n", tr[0], p);
+    }
+}
+
+
+void sharedPrint(){
+    tItemMem item;
+    memPos p = memFirst(memlist);
+
+    printf("******Lista de bloques asignados shared para el proceso %d\n",getpid());
+    while (p!=NULL){
+
+        item= getMemItem(p,memlist);
+        if (item.type=='4'){
+            printf("%p: size:%zu. shared memory (fd:%d) ",item.address,item.size,item.data.key);
+            printTimeFormat(item.time,2);
+
+        }
+
+        p= memNext(p,memlist);
+    }
+}
+
+
+void * ObtainMemShmget (key_t key, size_t size)
+{ /*Obtienen un puntero a una zaona de memoria compartida*/
+/*si tam >0 intenta crearla y si tam==0 asume que existe*/
+    void * p;
+    int aux,id,flags=0777;
+    struct shmid_ds s;
+    tItemMem item;
+
+    if (size) /*si tam no es 0 la crea en modo exclusivo esta funcion vale para shared y shared -create*/
+        flags=flags | IPC_CREAT | IPC_EXCL;
+        /*si tam es 0 intenta acceder a una ya creada*/
+
+    if (key==IPC_PRIVATE){ /*no nos vale*/
+        errno=EINVAL;
+        return NULL;
+    }
+
+    if ((id=shmget(key, size, flags))==-1)
+        return (NULL);
+    if ((p=shmat(id,NULL,0))==(void*) -1){
+        aux=errno; /*si se ha creado y no se puede mapear*/
+        if (size) /*entonces se borra */
+            shmctl(id,IPC_RMID,NULL);
+        errno=aux;
+        return (NULL);
+    }
+    shmctl (id,IPC_STAT,&s);
+    item.address=p;
+    item.type='4';
+    item.size=s.shm_segsz;
+    item.time=time(NULL);
+    item.data.key=key;
+
+    insertMemItem(item,&memlist);
+    return (p);
+}
+
+
+void SharedCreate (char *tr[]){ /*arg[0] is the key
+and arg[1] is the size*/
+
+    key_t k;
+    size_t tam=0;
+    void *p;
+
+    if (tr[0]==NULL || tr[1]==NULL){
+        sharedPrint();
+        return;
+    }
+
+    k=(key_t) atoi(tr[0]);
+    tam=(size_t) atoll(tr[1]);
+    if ((p=ObtainMemShmget(k,tam))==NULL)
+        printf("Impossible to get shmget memory: %s\n", strerror(errno));
+    else{
+        printf ("Allocated shared memory (key %d) at %p\n",k,p);
+    }
+
+}
+
+void sharedFree(char *tr[]){
+
+    tItemMem item;
+    memPos pos;
+    bool deleted = false;
+    key_t k;
+
+    if (tr[0]==NULL){
+        sharedPrint();
+        return;
+    }
+
+    k=(key_t) atoi(tr[0]);
+    pos= memFirst(memlist);
+    while (pos!=NULL){
+
+        item= getMemItem(pos,memlist);
+        if (item.type=='4'){
+            if (item.data.key==k){
+
+                munmap(item.address,item.size);
+
+                deleteAtMemPosition(pos,&memlist);
+                deleted=true;
+                break;
+            }
+        }
+        pos = memNext(pos,memlist);
+    }
+    if(!deleted)
+        mMapPrint();
+}
+
+void sharedDeletekey(char *tr[]){
+    key_t k;
+    int id, flags=0777;;
+    void *p;
+
+
+    if (tr[0]==NULL){
+        sharedPrint();
+        return;
+    }
+    k=(key_t) atoi(tr[0]);
+
+    if ((id=shmget(k, 0, flags))==-1){
+        strerror(errno);
+        return;
+    }
+    shmctl(id,IPC_RMID,NULL);
+
+
+}
+
+
+void cmd_shared(char *tr[]){
+    /*shared [-free|-create|-delkey ] cl [tam] Gets shared memory of key cl,
+     * maps it in the proccess address space and shows the memory address
+     * where the shared memory has been mapped.*/
+    void * p;
+
+    if (tr[0]==NULL){
+        sharedPrint();
+        return;
+    }
+    if (!strcmp(tr[0],"-create")){
+
+        if(tr[2]!=NULL && !strcmp(tr[2],"0"))
+            printf("No se asignan bloques de 0 bytes\n");
+        else
+            SharedCreate(tr+1);
+
+    } else if (!strcmp(tr[0],"-free")){
+        sharedFree(tr+1);
+    } else if (!strcmp(tr[0],"-delkey")){
+        sharedDeletekey(tr+1);
+    } else {
+        tr[1]="0";
+        SharedCreate(tr);
+    }
+
+}
+
+void cmd_dealloc(char *tr[]){
+
+    if (tr[0]==NULL){
+        //TODO:print assigned blocks
+    } else if (!strcmp(tr[0],"-malloc")){
+        mallocFree(tr+1);
+    } else if (!strcmp(tr[0],"-mmap")){
+        mmapFree(tr+1);
+    } else if (!strcmp(tr[0],"-shared")){
+        sharedFree(tr+1);
+    } else{
+
+        //TODO:busca de cual es y la borra
+
+    }
+
+
+
+}
+
+void cmd_memoria(char *tr[]){
+
+}
+
+void cmd_volcarmem(char *tr[]){
+
+}
+
+void cmd_llenarmem(char *tr[]){
+
+}
+
+void cmd_recursiva(char *tr[]){
+
+}
+
+void cmd_e_s(char *tr[]){
+
+}
+
 
 int trocearcadena(char * cadena, char * trozos[]){
 
@@ -616,9 +1046,10 @@ int main (int argc, char*argv[]) {
     char *tr[MAXLINEA / 2];
 
     createList(&list);
+    createMemList(&memlist);
 
     while(1){
-        printf("*)");
+        printf("ඞ");
         fgets(linea, MAXLINEA, stdin);
         tItemL item;
 
