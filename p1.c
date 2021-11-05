@@ -175,26 +175,28 @@ void cmd_ayuda(char *tr[]){
     else if(!strcmp(tr[0],"autores")) printf("autores [-l|-n]: Prints the names and logins of the program authors.\n");
     else if(!strcmp(tr[0],"pid")) printf("pid [-p]: Prints the pid of the process executing the shell.\n");
     else if(!strcmp(tr[0],"carpeta")) printf("carpeta [direct]: Changes the current working directory of the shell to direct. When invoked without auguments it prints the current working directory.\n");
-    else if(!strcmp(tr[0],"fecha")) printf("fecha [-d] [-h]: Prints both the current date and the current time.\n\n\t-d\tprints the current date in the format DD/MM/YYYY.\n\t-h\tprints the current time in the format hh:mm:ss.\n\n");
-    else if(!strcmp(tr[0],"hist")) printf("hist [-c][-N]: Shows the historic of commands executed by this shell in order.\n\n\t-c\tclears the historic.\n\t-N\tprints the first N comands\n\n");
+    else if(!strcmp(tr[0],"fecha")) printf("fecha [-d|-h]: Prints both the current date and the current time.\n");
+    else if(!strcmp(tr[0],"hist")) printf("hist [-c|-N]: Shows the historic of commands executed by this shell in order.\n\n\t-c\tclears the historic.\n\t-N\tprints the first N comands\n\n");
     else if(!strcmp(tr[0],"comando")) printf("comando N: Repeats command number N\n");
     else if(!strcmp(tr[0],"infosis")) printf("infosis: Prints information on the machine running the shell\n");
     else if(!strcmp(tr[0],"ayuda")) printf("ayuda [cmd]: ayuda displays a list of available commands.\n\n\t[cmd]\tgives a brief help on the usage of comand cmd\n\n");
     else if(!strcmp(tr[0],"fin")) printf("fin: Ends the shell\n");
     else if(!strcmp(tr[0],"bye")) printf("bye: Ends the shell\n");
     else if(!strcmp(tr[0],"salir")) printf("salir: Ends the shell\n");
-    else if(!strcmp(tr[0],"crear")) printf("crear [-f] [name]: Creates a directory or file in the file system.\nIf no names are given, shows the current directory\n\n\tcrear [name]\t%s\n\tcrear -f [name]\t%s\n\n","creates an empty directory with name [name]","creates an empty file with name [name]");
+    else if(!strcmp(tr[0],"crear")) printf("crear [-f] [name]: Creates a directory or file in the file system.\nIf no names are given, shows the current directory\n");
     else if(!strcmp(tr[0],"borrar")) printf("borrar name1 name2...: Deletes files and/or empty directories\n");
     else if(!strcmp(tr[0],"borrarrec")) printf("borrarrec name1 name2...: Deletes files and/or non empty directories. If the directory is not empty it is deleted with all its contents\n");
-    else if(!strcmp(tr[0],"listfich")){
-        printf("listfich [-long] [-link] [-acc] name1 name2 name3...: Gives info on files, directories, etc. entered\nIf no options are given, it prints the size and the name of each file.\nIf no names are given it prints the current directory\n");
-        printf("\n\t-long\tprints the information in long listing mode\n\t-link\tif long is applied and the file is a symbolic link, the name of the file it points to is also printed \t\n\t-acc\tlast access time will be used instead of last modification time\n\n");
-    }
-    else if(!strcmp(tr[0],"listdir")){
-        printf("listdir [-reca] [-recb] [-hid] [-long] [-link] [-acc] name1 name2...: Lists the contents of directories with names name1, name2...\nIf no options are given, it prints the size and the name of each file.\nIf no names are given it prints the current directory\nIf the name inserted is a file, it prints the information about the file\n");
-        printf("\n\t-long\tprints the information in long listing mode\n\t-link\tif long is applied and the file is a symbolic link, the name of the file it points to is also printed \t\n\t-acc\tlast access time will be used instead of last modification time");
-        printf("\n\t-hid\thidden files and/or directories will also get listed\n\t-reca\tprints subdirectories and its content recursively after all the files in the directory\n\t-recb\tprints subdirectories and its content recursively before all the files in the directory\n\n");
-    }
+    else if(!strcmp(tr[0],"listfich"))printf("listfich [-long] [-link] [-acc] name1 name2 name3...: Gives info of the files, directories, etc. entered\n");
+    else if(!strcmp(tr[0],"listdir"))printf("listdir [-reca] [-recb] [-hid] [-long] [-link] [-acc] name1 name2...: Lists the contents and data of directories with names name1, name2 depending on the flags given\n");
+    else if(!strcmp(tr[0],"malloc"))printf("malloc [-free] tam: allocates or deallocates tam bytes of memory in the program\n");
+    else if(!strcmp(tr[0],"mmap"))printf("mmap [-free] fich perm:\t maps or unmaps in memory the file fich\n");
+    else if(!strcmp(tr[0],"shared"))printf("shared [-free|-create|-delkey] cl [tam]: assigns or deassigns shared memory in the program\n");
+    else if(!strcmp(tr[0],"dealloc"))printf("dealloc [-malloc-shared|-mmap] ...: deassigns a block of memory assigned with malloc, mmap or shared\n");
+    else if(!strcmp(tr[0],"memoria"))printf("memoria [-blocks|-funcs|-vars|-all|-pmap]: Shows addresses inside the process memory space\n");
+    else if(!strcmp(tr[0],"volcarmem"))printf("volcarmem addr [cont]: Shows the contents of cont bytes starting at memory address addr\n");
+    else if(!strcmp(tr[0],"llenarmem"))printf("llenarmem addr [cont] [byte]: Fills cont bytes of memory starting at address addr with the value 'byte' \n");
+    else if(!strcmp(tr[0],"recursiva"))printf("recursiva n:  Calls a recursive function n times\n");
+    else if(!strcmp(tr[0],"e-s"))printf("e-s [read|write] [-o] fiche addr cont:  reads or writes cont bytes from/into file fich into/from memory address addr\n");
     else printf("%s is not a command\n",tr[0]);
 }
 
