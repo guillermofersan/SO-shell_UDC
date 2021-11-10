@@ -67,7 +67,6 @@ void cmd_llenarmem(char **);
 void cmd_recursiva(char **);
 void cmd_e_s(char **);
 
-
 struct CMD{
     char * cmdname;
     void (*func)(char **);
@@ -621,7 +620,7 @@ void cmd_listdir(char *tr[]){
 void mallocPrint(){
     tItemMem item;
     memPos p = memFirst(memlist);
-    printf("******Lista de bloques asignados malloc para el proceso %d\n",getpid());
+
     while (p!=NULL){
 
         item= getMemItem(p,memlist);
@@ -642,6 +641,7 @@ void mallocFree(char *tr[]){
     bool deleted = false;
 
     if (tr[0]==NULL) {
+        printf("******Lista de bloques asignados malloc para el proceso %d\n",getpid());
         mallocPrint();
         return;
     }
@@ -662,8 +662,11 @@ void mallocFree(char *tr[]){
         }
         p = memNext(p,memlist);
     }
-    if(!deleted)
+    if(!deleted){
+        printf("******Lista de bloques asignados malloc para el proceso %d\n",getpid());
         mallocPrint();
+    }
+
 }
 
 void cmd_malloc(char *tr[]){
@@ -675,6 +678,7 @@ void cmd_malloc(char *tr[]){
     void *address;
 
     if(tr[0]==NULL){
+        printf("******Lista de bloques asignados malloc para el proceso %d\n",getpid());
         mallocPrint();
 
     } else if (!strcmp(tr[0],"-free")){
@@ -711,7 +715,7 @@ void mMapPrint(){
     tItemMem item;
     memPos p = memFirst(memlist);
 
-    printf("******Lista de bloques asignados mmap para el proceso %d\n",getpid());
+
     while (p!=NULL){
 
         item= getMemItem(p,memlist);
@@ -755,6 +759,7 @@ void mmapFree(char *tr[]){
     bool deleted = false;
 
     if (tr[0]==NULL){
+        printf("******Lista de bloques asignados mmap para el proceso %d\n",getpid());
         mMapPrint();
         return;
     }
@@ -775,8 +780,11 @@ void mmapFree(char *tr[]){
         }
         pos = memNext(pos,memlist);
     }
-    if(!deleted)
+    if(!deleted){
         mMapPrint();
+        printf("******Lista de bloques asignados mmap para el proceso %d\n",getpid());
+    }
+
 }
 
 void cmd_mmap (char *tr[]){
@@ -788,6 +796,7 @@ void cmd_mmap (char *tr[]){
 
 
     if (tr[0]==NULL){
+        printf("******Lista de bloques asignados mmap para el proceso %d\n",getpid());
         mMapPrint();
         return;
     }
@@ -814,12 +823,12 @@ void sharedPrint(){
     tItemMem item;
     memPos p = memFirst(memlist);
 
-    printf("******Lista de bloques asignados shared para el proceso %d\n",getpid());
+
     while (p!=NULL){
 
         item= getMemItem(p,memlist);
         if (item.type=='4'){
-            printf("%p: size:%zu. shared memory (fd:%d) ",item.address,item.size,item.data.key);
+            printf("%p: size:%zu. shared memory (key:%d) ",item.address,item.size,item.data.key);
             printTimeFormat(item.time,2);
 
         }
@@ -868,13 +877,14 @@ void * ObtainMemShmget (key_t key, size_t size)
 
 
 void SharedCreate (char *tr[]){ /*arg[0] is the key
-and arg[1] is the size*/
+                                  and arg[1] is the size*/
 
     key_t k;
-    size_t tam=0;
+    size_t tam;
     void *p;
 
     if (tr[0]==NULL || tr[1]==NULL){
+        printf("******Lista de bloques asignados shared para el proceso %d\n",getpid());
         sharedPrint();
         return;
     }
@@ -897,6 +907,7 @@ void sharedFree(char *tr[]){
     key_t k;
 
     if (tr[0]==NULL){
+        printf("******Lista de bloques asignados shared para el proceso %d\n",getpid());
         sharedPrint();
         return;
     }
@@ -918,8 +929,11 @@ void sharedFree(char *tr[]){
         }
         pos = memNext(pos,memlist);
     }
-    if(!deleted)
-        mMapPrint();
+    if(!deleted){
+        printf("******Lista de bloques asignados shared para el proceso %d\n",getpid());
+        sharedPrint();
+    }
+
 }
 
 void sharedDeletekey(char *tr[]){
@@ -929,6 +943,7 @@ void sharedDeletekey(char *tr[]){
 
 
     if (tr[0]==NULL){
+        printf("******Lista de bloques asignados shared para el proceso %d\n",getpid());
         sharedPrint();
         return;
     }
@@ -939,8 +954,6 @@ void sharedDeletekey(char *tr[]){
         return;
     }
     shmctl(id,IPC_RMID,NULL);
-
-
 }
 
 
@@ -951,6 +964,7 @@ void cmd_shared(char *tr[]){
     void * p;
 
     if (tr[0]==NULL){
+        printf("******Lista de bloques asignados shared para el proceso %d\n",getpid());
         sharedPrint();
         return;
     }
@@ -972,24 +986,69 @@ void cmd_shared(char *tr[]){
 
 }
 
+void allBlocksPrint(){
+    mallocPrint();
+    mMapPrint();
+    sharedPrint();
+}
+
 void cmd_dealloc(char *tr[]){
 
+    memPos pos;
+    tItemMem item;
+    char auxaddr[14];
+    bool deleted=false;
+
     if (tr[0]==NULL){
-        //TODO:print assigned blocks
+        allBlocksPrint();
     } else if (!strcmp(tr[0],"-malloc")){
         mallocFree(tr+1);
     } else if (!strcmp(tr[0],"-mmap")){
         mmapFree(tr+1);
     } else if (!strcmp(tr[0],"-shared")){
         sharedFree(tr+1);
-    } else{
+    } else{//TODO: pasar esto a una función
 
-        //TODO:busca de cual es y la borra
+        pos= memFirst(memlist);
 
+        while (pos!=NULL){
+
+            item= getMemItem(pos,memlist);
+            sprintf(auxaddr,"%p",item.address);
+
+            if(strcmp(tr[0],auxaddr)!=0){
+                pos = memNext(pos,memlist);
+                continue;
+            }
+
+            printf("block at address %p deallocated",item.address);
+            switch (item.type) {
+                case '1':
+                    printf("(malloc)\n");
+                    free(item.address);
+                    deleteAtMemPosition(pos,&memlist);
+                    break;
+                case '2':
+                    printf("(mmap)\n");
+                    munmap(item.address,item.size);
+                    close(item.data.fd);
+                    deleteAtMemPosition(pos,&memlist);
+                    break;
+                case '4':
+                    printf("(shared)\n");
+                    munmap(item.address,item.size);
+                    deleteAtMemPosition(pos,&memlist);
+                    break;
+                default:
+                    printf("Error\n");
+                    break;
+            }
+            deleted=true;
+            break;
+        }
+        if (!deleted)
+            allBlocksPrint();
     }
-
-
-
 }
 
 void cmd_memoria(char *tr[]){

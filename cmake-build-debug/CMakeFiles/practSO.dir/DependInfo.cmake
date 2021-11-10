@@ -8,9 +8,9 @@ set(CMAKE_DEPENDS_LANGUAGES
   )
 # The set of files for implicit dependencies of each language:
 set(CMAKE_DEPENDS_CHECK_C
-  "/home/guillermo/practSO/list.c" "/home/guillermo/practSO/cmake-build-debug/CMakeFiles/practSO.dir/list.c.o"
-  "/home/guillermo/practSO/memlist.c" "/home/guillermo/practSO/cmake-build-debug/CMakeFiles/practSO.dir/memlist.c.o"
-  "/home/guillermo/practSO/p1.c" "/home/guillermo/practSO/cmake-build-debug/CMakeFiles/practSO.dir/p1.c.o"
+  "/home/guillemo/Documents/SOpract/list.c" "/home/guillemo/Documents/SOpract/cmake-build-debug/CMakeFiles/practSO.dir/list.c.o"
+  "/home/guillemo/Documents/SOpract/memlist.c" "/home/guillemo/Documents/SOpract/cmake-build-debug/CMakeFiles/practSO.dir/memlist.c.o"
+  "/home/guillemo/Documents/SOpract/p1.c" "/home/guillemo/Documents/SOpract/cmake-build-debug/CMakeFiles/practSO.dir/p1.c.o"
   )
 set(CMAKE_C_COMPILER_ID "GNU")
 

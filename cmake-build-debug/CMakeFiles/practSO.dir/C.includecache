@@ -6,11 +6,11 @@
 
 #IncludeRegexTransform: 
 
-/home/guillermo/practSO/list.h
+/home/guillemo/Documents/SOpract/list.h
 stdbool.h
 -
 
-/home/guillermo/practSO/memlist.h
+/home/guillemo/Documents/SOpract/memlist.h
 stdbool.h
 -
 stdlib.h
@@ -22,7 +22,7 @@ stdio.h
 sys/types.h
 -
 
-/home/guillermo/practSO/p1.c
+/home/guillemo/Documents/SOpract/p1.c
 stdio.h
 -
 stdlib.h
@@ -58,7 +58,7 @@ grp.h
 sys/shm.h
 -
 list.h
-/home/guillermo/practSO/list.h
+/home/guillemo/Documents/SOpract/list.h
 memlist.h
-/home/guillermo/practSO/memlist.h
+/home/guillemo/Documents/SOpract/memlist.h
 
