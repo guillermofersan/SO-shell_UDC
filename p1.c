@@ -17,27 +17,31 @@
 #include <sys/mman.h>
 #include <dirent.h>
 #include <fcntl.h>
-#include <unistd.h>
 #include <libgen.h>
 #include <pwd.h>
 #include <errno.h>
 #include <grp.h>
 #include <sys/shm.h>
+#include <sys/wait.h>
 
 
 #include "list.h"
 #include "memlist.h"
 
 #define MAXLINEA 1024
+#define TAMANO 4096
 #define NAMEMAX 32
 #define st_atime st_atim.tv_sec
 #define st_mtime st_mtim.tv_sec
+#define LEERCOMPLETO ((ssize_t)-1)
 
 /*GLOBAL VARIABLES*/
 tList list;
 bool iscmd;
 memList memlist;
 
+/*global variables for memoria command*/
+int g1=1,g2=2,g3=3;
 
 void ProcesarEntrada(char *tr[]);
 int trocearcadena(char * cadena, char * trozos[]);
@@ -66,6 +70,7 @@ void cmd_volcarmem(char **);
 void cmd_llenarmem(char **);
 void cmd_recursiva(char **);
 void cmd_e_s(char **);
+
 
 struct CMD{
     char * cmdname;
@@ -174,28 +179,26 @@ void cmd_ayuda(char *tr[]){
     else if(!strcmp(tr[0],"autores")) printf("autores [-l|-n]: Prints the names and logins of the program authors.\n");
     else if(!strcmp(tr[0],"pid")) printf("pid [-p]: Prints the pid of the process executing the shell.\n");
     else if(!strcmp(tr[0],"carpeta")) printf("carpeta [direct]: Changes the current working directory of the shell to direct. When invoked without auguments it prints the current working directory.\n");
-    else if(!strcmp(tr[0],"fecha")) printf("fecha [-d|-h]: Prints both the current date and the current time.\n");
-    else if(!strcmp(tr[0],"hist")) printf("hist [-c|-N]: Shows the historic of commands executed by this shell in order.\n\n\t-c\tclears the historic.\n\t-N\tprints the first N comands\n\n");
+    else if(!strcmp(tr[0],"fecha")) printf("fecha [-d] [-h]: Prints both the current date and the current time.\n\n\t-d\tprints the current date in the format DD/MM/YYYY.\n\t-h\tprints the current time in the format hh:mm:ss.\n\n");
+    else if(!strcmp(tr[0],"hist")) printf("hist [-c][-N]: Shows the historic of commands executed by this shell in order.\n\n\t-c\tclears the historic.\n\t-N\tprints the first N comands\n\n");
     else if(!strcmp(tr[0],"comando")) printf("comando N: Repeats command number N\n");
     else if(!strcmp(tr[0],"infosis")) printf("infosis: Prints information on the machine running the shell\n");
     else if(!strcmp(tr[0],"ayuda")) printf("ayuda [cmd]: ayuda displays a list of available commands.\n\n\t[cmd]\tgives a brief help on the usage of comand cmd\n\n");
     else if(!strcmp(tr[0],"fin")) printf("fin: Ends the shell\n");
     else if(!strcmp(tr[0],"bye")) printf("bye: Ends the shell\n");
     else if(!strcmp(tr[0],"salir")) printf("salir: Ends the shell\n");
-    else if(!strcmp(tr[0],"crear")) printf("crear [-f] [name]: Creates a directory or file in the file system.\nIf no names are given, shows the current directory\n");
+    else if(!strcmp(tr[0],"crear")) printf("crear [-f] [name]: Creates a directory or file in the file system.\nIf no names are given, shows the current directory\n\n\tcrear [name]\t%s\n\tcrear -f [name]\t%s\n\n","creates an empty directory with name [name]","creates an empty file with name [name]");
     else if(!strcmp(tr[0],"borrar")) printf("borrar name1 name2...: Deletes files and/or empty directories\n");
     else if(!strcmp(tr[0],"borrarrec")) printf("borrarrec name1 name2...: Deletes files and/or non empty directories. If the directory is not empty it is deleted with all its contents\n");
-    else if(!strcmp(tr[0],"listfich"))printf("listfich [-long] [-link] [-acc] name1 name2 name3...: Gives info of the files, directories, etc. entered\n");
-    else if(!strcmp(tr[0],"listdir"))printf("listdir [-reca] [-recb] [-hid] [-long] [-link] [-acc] name1 name2...: Lists the contents and data of directories with names name1, name2 depending on the flags given\n");
-    else if(!strcmp(tr[0],"malloc"))printf("malloc [-free] tam: allocates or deallocates tam bytes of memory in the program\n");
-    else if(!strcmp(tr[0],"mmap"))printf("mmap [-free] fich perm:\t maps or unmaps in memory the file fich\n");
-    else if(!strcmp(tr[0],"shared"))printf("shared [-free|-create|-delkey] cl [tam]: assigns or deassigns shared memory in the program\n");
-    else if(!strcmp(tr[0],"dealloc"))printf("dealloc [-malloc-shared|-mmap] ...: deassigns a block of memory assigned with malloc, mmap or shared\n");
-    else if(!strcmp(tr[0],"memoria"))printf("memoria [-blocks|-funcs|-vars|-all|-pmap]: Shows addresses inside the process memory space\n");
-    else if(!strcmp(tr[0],"volcarmem"))printf("volcarmem addr [cont]: Shows the contents of cont bytes starting at memory address addr\n");
-    else if(!strcmp(tr[0],"llenarmem"))printf("llenarmem addr [cont] [byte]: Fills cont bytes of memory starting at address addr with the value 'byte' \n");
-    else if(!strcmp(tr[0],"recursiva"))printf("recursiva n:  Calls a recursive function n times\n");
-    else if(!strcmp(tr[0],"e-s"))printf("e-s [read|write] [-o] fiche addr cont:  reads or writes cont bytes from/into file fich into/from memory address addr\n");
+    else if(!strcmp(tr[0],"listfich")){
+        printf("listfich [-long] [-link] [-acc] name1 name2 name3...: Gives info on files, directories, etc. entered\nIf no options are given, it prints the size and the name of each file.\nIf no names are given it prints the current directory\n");
+        printf("\n\t-long\tprints the information in long listing mode\n\t-link\tif long is applied and the file is a symbolic link, the name of the file it points to is also printed \t\n\t-acc\tlast access time will be used instead of last modification time\n\n");
+    }
+    else if(!strcmp(tr[0],"listdir")){
+        printf("listdir [-reca] [-recb] [-hid] [-long] [-link] [-acc] name1 name2...: Lists the contents of directories with names name1, name2...\nIf no options are given, it prints the size and the name of each file.\nIf no names are given it prints the current directory\nIf the name inserted is a file, it prints the information about the file\n");
+        printf("\n\t-long\tprints the information in long listing mode\n\t-link\tif long is applied and the file is a symbolic link, the name of the file it points to is also printed \t\n\t-acc\tlast access time will be used instead of last modification time");
+        printf("\n\t-hid\thidden files and/or directories will also get listed\n\t-reca\tprints subdirectories and its content recursively after all the files in the directory\n\t-recb\tprints subdirectories and its content recursively before all the files in the directory\n\n");
+    }
     else printf("%s is not a command\n",tr[0]);
 }
 
@@ -620,7 +623,7 @@ void cmd_listdir(char *tr[]){
 void mallocPrint(){
     tItemMem item;
     memPos p = memFirst(memlist);
-
+    printf("******Lista de bloques asignados malloc para el proceso %d\n",getpid());
     while (p!=NULL){
 
         item= getMemItem(p,memlist);
@@ -641,7 +644,6 @@ void mallocFree(char *tr[]){
     bool deleted = false;
 
     if (tr[0]==NULL) {
-        printf("******Lista de bloques asignados malloc para el proceso %d\n",getpid());
         mallocPrint();
         return;
     }
@@ -662,11 +664,8 @@ void mallocFree(char *tr[]){
         }
         p = memNext(p,memlist);
     }
-    if(!deleted){
-        printf("******Lista de bloques asignados malloc para el proceso %d\n",getpid());
+    if(!deleted)
         mallocPrint();
-    }
-
 }
 
 void cmd_malloc(char *tr[]){
@@ -678,7 +677,6 @@ void cmd_malloc(char *tr[]){
     void *address;
 
     if(tr[0]==NULL){
-        printf("******Lista de bloques asignados malloc para el proceso %d\n",getpid());
         mallocPrint();
 
     } else if (!strcmp(tr[0],"-free")){
@@ -715,7 +713,7 @@ void mMapPrint(){
     tItemMem item;
     memPos p = memFirst(memlist);
 
-
+    printf("******Lista de bloques asignados mmap para el proceso %d\n",getpid());
     while (p!=NULL){
 
         item= getMemItem(p,memlist);
@@ -759,7 +757,6 @@ void mmapFree(char *tr[]){
     bool deleted = false;
 
     if (tr[0]==NULL){
-        printf("******Lista de bloques asignados mmap para el proceso %d\n",getpid());
         mMapPrint();
         return;
     }
@@ -780,11 +777,8 @@ void mmapFree(char *tr[]){
         }
         pos = memNext(pos,memlist);
     }
-    if(!deleted){
+    if(!deleted)
         mMapPrint();
-        printf("******Lista de bloques asignados mmap para el proceso %d\n",getpid());
-    }
-
 }
 
 void cmd_mmap (char *tr[]){
@@ -796,7 +790,6 @@ void cmd_mmap (char *tr[]){
 
 
     if (tr[0]==NULL){
-        printf("******Lista de bloques asignados mmap para el proceso %d\n",getpid());
         mMapPrint();
         return;
     }
@@ -823,12 +816,12 @@ void sharedPrint(){
     tItemMem item;
     memPos p = memFirst(memlist);
 
-
+    printf("******Lista de bloques asignados shared para el proceso %d\n",getpid());
     while (p!=NULL){
 
         item= getMemItem(p,memlist);
         if (item.type=='4'){
-            printf("%p: size:%zu. shared memory (key:%d) ",item.address,item.size,item.data.key);
+            printf("%p: size:%zu. shared memory (fd:%d) ",item.address,item.size,item.data.key);
             printTimeFormat(item.time,2);
 
         }
@@ -848,7 +841,7 @@ void * ObtainMemShmget (key_t key, size_t size)
 
     if (size) /*si tam no es 0 la crea en modo exclusivo esta funcion vale para shared y shared -create*/
         flags=flags | IPC_CREAT | IPC_EXCL;
-        /*si tam es 0 intenta acceder a una ya creada*/
+    /*si tam es 0 intenta acceder a una ya creada*/
 
     if (key==IPC_PRIVATE){ /*no nos vale*/
         errno=EINVAL;
@@ -877,14 +870,13 @@ void * ObtainMemShmget (key_t key, size_t size)
 
 
 void SharedCreate (char *tr[]){ /*arg[0] is the key
-                                  and arg[1] is the size*/
+and arg[1] is the size*/
 
     key_t k;
-    size_t tam;
+    size_t tam=0;
     void *p;
 
     if (tr[0]==NULL || tr[1]==NULL){
-        printf("******Lista de bloques asignados shared para el proceso %d\n",getpid());
         sharedPrint();
         return;
     }
@@ -907,7 +899,6 @@ void sharedFree(char *tr[]){
     key_t k;
 
     if (tr[0]==NULL){
-        printf("******Lista de bloques asignados shared para el proceso %d\n",getpid());
         sharedPrint();
         return;
     }
@@ -929,21 +920,17 @@ void sharedFree(char *tr[]){
         }
         pos = memNext(pos,memlist);
     }
-    if(!deleted){
-        printf("******Lista de bloques asignados shared para el proceso %d\n",getpid());
-        sharedPrint();
-    }
-
+    if(!deleted)
+        mMapPrint();
 }
 
 void sharedDeletekey(char *tr[]){
     key_t k;
-    int id, flags=0777;
+    int id, flags=0777;;
     void *p;
 
 
     if (tr[0]==NULL){
-        printf("******Lista de bloques asignados shared para el proceso %d\n",getpid());
         sharedPrint();
         return;
     }
@@ -954,6 +941,8 @@ void sharedDeletekey(char *tr[]){
         return;
     }
     shmctl(id,IPC_RMID,NULL);
+
+
 }
 
 
@@ -964,7 +953,6 @@ void cmd_shared(char *tr[]){
     void * p;
 
     if (tr[0]==NULL){
-        printf("******Lista de bloques asignados shared para el proceso %d\n",getpid());
         sharedPrint();
         return;
     }
@@ -1051,24 +1039,200 @@ void cmd_dealloc(char *tr[]){
     }
 }
 
+void dopmap (void) {
+
+    pid_t pid; /*ejecuta el comando externo pmap para */
+    char elpid[32]; /*pasandole el pid del proceso actual */
+    char *argv[3]= {"pmap",elpid,NULL};
+
+    sprintf (elpid,"%d", (int) getpid());
+
+    if ((pid=fork())==-1){
+        perror ("Imposible crear proceso");
+        return;
+    }
+    if (pid==0){
+        if (execvp(argv[0],argv)==-1)
+            perror("cannot execute pmap");
+        exit(1);
+    }
+    waitpid (pid,NULL,0);
+}
+
 void cmd_memoria(char *tr[]){
 
+    int l1=1,l2=2,l3=3;
+    static int s1=1, s2=2, s3=3;
+
+
+    if((tr[0]==NULL || !strcmp(tr[0],"-all")) || !strcmp(tr[0],"-vars")){
+        printf("Local  Variables\t%p,\t%p,\t%p\n",&l1,&l2,&l3);
+        printf("Global Variables\t%p,\t%p,\t%p\n",&g1,&g2,&g3);
+        printf("Static Variables\t%p,\t%p,\t%p\n",&s1,&s2,&s3);
+    }
+    if((tr[0]==NULL || !strcmp(tr[0],"-all")) || !strcmp(tr[0],"-funcs")){
+        printf("Program functions\t%p,\t%p,\t%p\n", cmd_autores, cmd_carpeta, cmd_pid);
+        printf("Library functions:\t%p,\t%p,\t%p\n", printf,strcpy, strcmp);
+    }
+    if((tr[0]==NULL || !strcmp(tr[0],"-all")) || !strcmp(tr[0],"-blocks")){
+        if(!isEmptyMemList(memlist))
+            printf("******List of blocks assigned for the process %d\n",getpid());
+        allBlocksPrint();
+    }
+
+    if(tr[0]!=NULL && !strcmp(tr[0],"-pmap")){
+        dopmap();
+        return;
+    }
+
+    if(!(tr[0]==NULL || !strcmp(tr[0],"-all") || !strcmp(tr[0],"-blocks") || !strcmp(tr[0],"-vars") || !strcmp(tr[0],"-funcs")))
+        printf("Error: option %s is not valid\n",tr[0]);
 }
 
-void cmd_volcarmem(char *tr[]){
+void cmd_volcarmem(char *tr[]){ //TODO: volcarmem
 
+    int cont=25;
+    void* addr;
+    if (tr[0]==NULL)
+        return;
+    addr = (void*) strtol(tr[0], NULL, 16);
+
+    if (tr[1]!=NULL)
+        cont= atoi(tr[1]);
+
+    printf("volcarmem %p %d bytes\n",addr,cont);
 }
 
-void cmd_llenarmem(char *tr[]){
+void cmd_llenarmem(char *tr[]){ //TODO: llenarmem
 
+    int cont=128;
+    //byte=0x42
+    void* addr;
+    if (tr[0]==NULL)
+        return;
+    if (tr[1]!=NULL)
+        cont= atoi(tr[1]);
+    //if (tr[2]!=NULL) byte=tr[2];
+}
+
+void doRecursiva (int n){
+    char automatico[TAMANO];
+    static char estatico[TAMANO];
+    printf ("parameter n:%3d(%p) ",n,&n);
+    printf ("automatic array en %p, ",automatico);
+    printf ("static array %p\n",estatico);
+    n--;
+    if (n>0)
+        doRecursiva(n);
 }
 
 void cmd_recursiva(char *tr[]){
 
+    int n;
+
+    if (tr[0]==NULL)
+        return;
+    n = atoi(tr[0]);
+
+    doRecursiva(n);
+
+}
+
+
+ssize_t readFile (char *fich, void *p, ssize_t n)
+{ /* le n bytes del fichero fich en p */
+    ssize_t nleidos,tam=n; /*si n==-1 lee el fichero completo*/
+    int df, aux;
+    struct stat s;
+    if (stat (fich,&s)==-1 || (df=open(fich,O_RDONLY))==-1){//error here
+        return ((ssize_t)-1);
+    }
+    if (n==LEERCOMPLETO)
+        tam=(ssize_t) s.st_size;
+    if ((nleidos=read(df,p, tam))==-1){
+        aux=errno;
+        close(df);
+        errno=aux;
+        return ((ssize_t)-1);
+    }
+    close (df);
+    return (nleidos);
+}
+
+void e_s_read(char *tr[]){
+
+    void *addr;
+    ssize_t cont=-1,aux;
+    if(tr[0]==NULL || tr[1]==NULL){
+        printf("missing parameters\n");
+        return;
+    }
+    if (tr[2]!=NULL)
+        cont = (ssize_t) strtol(tr[2],NULL,10);
+    addr = (void*) strtol(tr[1],NULL,16);
+
+    if ((aux=readFile(tr[0],addr,cont))==-1)
+        printf("Imposible leer fichero %s: %s\n",tr[0], strerror(errno));
+    else
+        printf("read %zd bytes of %s in %p\n", aux,tr[0],addr);
+}
+
+ssize_t writeFile (char *fich, void *p, ssize_t n,bool overwrite) {
+    /* le n bytes del fichero fich en p */
+    ssize_t nleidos,tam=n; /*si n==-1 lee el fichero completo*/
+    int df, aux;
+    struct stat s;
+    int flags= O_CREAT | O_WRONLY;
+
+    if (!overwrite)
+        flags|=O_EXCL;
+    else
+        flags|=O_TRUNC;
+
+    if ((df=open(fich,flags,0664))==-1 || stat (fich,&s)==-1){//error here TODO: stat se puede quitar
+        return ((ssize_t)-1);
+    }
+
+    if ((nleidos=write(df,p, tam))==-1){
+        aux=errno;
+        close(df);
+        errno=aux;
+        return ((ssize_t)-1);
+    }
+    close (df);
+    return (nleidos);
+}
+
+void e_s_write(char *tr[], bool overwrite){
+
+    void *addr;
+    ssize_t cont,aux;
+    if(tr[0]==NULL || tr[1]==NULL || tr[2]==NULL){
+        printf("missing parameters\n");
+        return;
+    }
+
+    cont = (ssize_t) strtol(tr[2],NULL,10);
+    addr = (void*) strtol(tr[1],NULL,16);
+
+    if ((aux=writeFile(tr[0],addr,cont,overwrite))==-1)
+        printf("Unable to write file %s: %s\n",tr[0], strerror(errno));
+    else
+        printf("writen %zd bytes to %s from %p\n", aux,tr[0],addr);
 }
 
 void cmd_e_s(char *tr[]){
 
+    if (tr[0]==NULL)
+        printf("uso: e-s [read|write] ......");
+    else if (!strcmp(tr[0],"write")){
+        if (tr[1]!=NULL && !strcmp(tr[1],"-o"))
+            e_s_write(tr+2,true);
+        else
+            e_s_write(tr+1,false);
+    }
+    else if (!strcmp(tr[0],"read"))
+        e_s_read(tr+1);
 }
 
 
@@ -1110,7 +1274,7 @@ int main (int argc, char*argv[]) {
     createMemList(&memlist);
 
     while(1){
-        printf("ඞ");
+        printf( "\x1b[31m" "ඞ" "\x1b[0m");
         fgets(linea, MAXLINEA, stdin);
         tItemL item;
 
