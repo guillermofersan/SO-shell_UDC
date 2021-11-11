@@ -1009,7 +1009,7 @@ void cmd_dealloc(char *tr[]){
                 continue;
             }
 
-            printf("block at address %p deallocated",item.address);
+            printf("block at address %p deallocated ",item.address);
             switch (item.type) {
                 case '1':
                     printf("(malloc)\n");
