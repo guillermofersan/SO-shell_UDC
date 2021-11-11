@@ -938,7 +938,7 @@ void sharedFree(char *tr[]){
 
 void sharedDeletekey(char *tr[]){
     key_t k;
-    int id, flags=0777;;
+    int id, flags=0777;
     void *p;
 
 
