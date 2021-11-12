@@ -1108,7 +1108,35 @@ void cmd_memoria(char *tr[]){
         printf("Error: option %s is not valid\n",tr[0]);
 }
 
-void cmd_volcarmem(char *tr[]){ //TODO: volcarmem
+
+void volcarmemaux( void *addr, int len){//if ((pc[i] < 0x20) || (pc[i] > 0x7e)) {
+
+    int i,j=0;
+    unsigned char *pc = (unsigned char*)addr;
+    unsigned char buff[25]="";
+
+    // Process every byte in the data.
+    while (j<len) {
+        for (i = 0; i < 25; i++) {
+            if (j>=len)
+                break;
+
+            printf(" %c ", pc[j]);
+            buff[i]=pc[j];
+            j++;
+        }
+        printf("\n");
+        for (int k = 0; k < i; ++k) {
+            printf("%02x ",buff[k]);
+        }
+
+        printf("\n");
+    }
+}
+
+
+
+void cmd_volcarmem(char *tr[]){ //TODO: not printable characters
 
     int cont=25;
     void* addr;
@@ -1120,6 +1148,7 @@ void cmd_volcarmem(char *tr[]){ //TODO: volcarmem
         cont= atoi(tr[1]);
 
     printf("volcarmem %p %d bytes\n",addr,cont);
+    volcarmemaux(addr,cont);
 }
 
 void cmd_llenarmem(char *tr[]){ //TODO: llenarmem
