@@ -1002,7 +1002,7 @@ bool deallocAdress(char *tr[]){
     pos= memFirst(memlist);
     void* address;
 
-    address=(void*) strtol(tr[0],NULL,16);
+    address = (void*) strtol(tr[0],NULL,16);
 
     while (pos!=NULL){
 
@@ -1108,35 +1108,50 @@ void cmd_memoria(char *tr[]){
         printf("Error: option %s is not valid\n",tr[0]);
 }
 
+/*
+void hexprint(unsigned char byte){ //TODO:cambiar esto
+    if (byte == 10){
+        printf("\\n ");
+    } else if((byte < 32) || (byte > 126)){
+        printf("   ");
+    }
+    else printf(" %c ", byte);
+}
+ */
 
-void volcarmemaux( void *addr, int len){//if ((pc[i] < 0x20) || (pc[i] > 0x7e)) {
+
+void volcarmemaux(void *addr, int cont){
 
     int i,j=0;
-    unsigned char *pc = (unsigned char*)addr;
-    unsigned char buff[25]="";
+    unsigned char *ad = (unsigned char*) addr;
+    unsigned char hex[25];
 
-    // Process every byte in the data.
-    while (j<len) {
+    while (j<cont) {
         for (i = 0; i < 25; i++) {
-            if (j>=len)
+            if (j>=cont)
                 break;
 
-            printf(" %c ", pc[j]);
-            buff[i]=pc[j];
+            if (ad[j] == 10){
+                printf("\\n ");
+            } else if((ad[j] < 32) || (ad[j] > 126)){
+                printf("   ");
+            }
+            else printf(" %c ", ad[j]);
+
+            hex[i]=ad[j];
             j++;
         }
         printf("\n");
         for (int k = 0; k < i; ++k) {
-            printf("%02x ",buff[k]);
+            printf("%02x ",hex[k]);
         }
-
         printf("\n");
     }
 }
 
 
 
-void cmd_volcarmem(char *tr[]){ //TODO: not printable characters
+void cmd_volcarmem(char *tr[]){
 
     int cont=25;
     void* addr;
@@ -1151,17 +1166,53 @@ void cmd_volcarmem(char *tr[]){ //TODO: not printable characters
     volcarmemaux(addr,cont);
 }
 
-void cmd_llenarmem(char *tr[]){ //TODO: llenarmem
+void llenarmemaux(void *addr,int cont,unsigned char byte){
+
+    int i;
+    unsigned char *ad = (unsigned char*) addr;
+
+    for (i = 0; i < cont; ++i) {
+        ad[i]=byte;
+    }
+
+    printf("Llenando %d bytes de memoria con el byte ",cont);
+    if (byte == 10){
+        printf("\\n");
+    } else if((byte < 32) || (byte > 126)){
+        printf(" ");
+    }else printf("%c", byte);
+    printf("(%02x) a partir de la direccion %p\n",byte,addr);
+
+}
+
+void cmd_llenarmem(char *tr[]){
 
     int cont=128;
-    //byte=0x42
+    unsigned char bytesel;
+
     void* addr;
-    if (tr[0]==NULL)
+    if (tr[0]==NULL )
         return;
+    addr = (void*) strtol(tr[0], NULL, 16);
+
     if (tr[1]!=NULL)
         cont= atoi(tr[1]);
-    //if (tr[2]!=NULL) byte=tr[2];
+
+    if (tr[1]==NULL)
+        printf("%s",tr[2]);
+
+    if (tr[1]!=NULL && tr[2]!=NULL){ //TODO:buscar forma mas optima o algo nose
+        if (tr[2][0]=='0'&&tr[2][1]=='x')
+            bytesel= (unsigned char) strtol(tr[2], NULL, 16);
+        else if (tr[2][0]=='\'' && tr[2][2]=='\'')
+            bytesel= (unsigned char) tr[2][1];
+        else
+            bytesel= (unsigned char) strtol(tr[2], NULL, 10);
+    }else bytesel = (unsigned char) 65;
+
+    llenarmemaux(addr,cont,bytesel);
 }
+
 
 void doRecursiva (int n){
     char automatico[TAMANO];
