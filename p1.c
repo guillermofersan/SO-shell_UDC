@@ -50,11 +50,11 @@ void printDir(bool, bool , bool , bool , int , char* );
 void cmd_autores(char **);
 void cmd_carpeta(char **);
 void cmd_pid(char **);
-void cmd_fin(char **);
+void cmd_fin();
 void cmd_fecha(char **);
 void cmd_hist(char **);
 void cmd_comando(char **);
-void cmd_infosis(char **);
+void cmd_infosis();
 void cmd_ayuda(char **);
 void cmd_crear(char **);
 void cmd_borrar(char **);
@@ -164,7 +164,7 @@ void cmd_fecha(char *tr[]){
 }
 
 
-void cmd_infosis(char *tr[]){
+void cmd_infosis() {
 /*prints the system information*/
     struct utsname infosis;
     uname(&infosis);
@@ -203,7 +203,7 @@ void cmd_ayuda(char *tr[]){
 }
 
 
-void cmd_fin(char *tr[]){
+void cmd_fin() {
 /*exits the shell*/
     exit(0);
 }
@@ -958,10 +958,12 @@ void sharedFree(char *tr[]){
         return;
     }
 
+    /*
     if ((id=shmget(k, 0, 0777))==-1){
         printf("Cannot free shared memory of key %d: %s",k, strerror(EINVAL));
         return;
     }
+    */
 
     pos= memFirst(memlist);
     while (pos!=NULL){
