@@ -620,7 +620,9 @@ void cmd_listdir(char *tr[]){
 
 /* LAB ASSIGNMENT 2 FUNCTIONS*/
 
+//Malloc functions and auxiliary functions
 void mallocPrint(){
+/*prints the list of blocks allocated with malloc*/
     tItemMem item;
     memPos p = memFirst(memlist);
 
@@ -637,13 +639,13 @@ void mallocPrint(){
 }
 
 void mallocFree(char *tr[]){
-
+/*frees a block of memory allocated with malloc*/
     memPos p;
     tItemMem it;
     size_t size;
     bool deleted = false;
 
-    if (tr[0]==NULL) {
+    if (tr[0]==NULL) { //no arguments: cannot free, prints the list of allocated blocks
         printf("******Lista de bloques asignados malloc para el proceso %d\n",getpid());
         mallocPrint();
         return;
@@ -657,15 +659,15 @@ void mallocFree(char *tr[]){
         if (it.type=='1'){
             if (it.size==size){
                 printf("deallocated %zu bytes at %p\n",size,it.address);
-                free(it.address);
-                deleteAtMemPosition(p,&memlist);
+                free(it.address); //address is freed
+                deleteAtMemPosition(p,&memlist); //item is deleted from the list
                 deleted=true;
                 break;
             }
         }
         p = memNext(p,memlist);
     }
-    if(!deleted){
+    if(!deleted){ //if no block allocated with that size, prints the list
         printf("******Lista de bloques asignados malloc para el proceso %d\n",getpid());
         mallocPrint();
     }
@@ -673,26 +675,18 @@ void mallocFree(char *tr[]){
 }
 
 void cmd_malloc(char *tr[]){
-/* malloc [-free] [tam] The shell allocates tam bytes using
- * malloc and shows the memory address returned by malloc.*/
+/* The shell allocates bytes with malloc and shows the memory address returned by malloc.*/
     size_t size;
     tItemMem item;
 
     void *address;
 
-    if(tr[0]==NULL){
+    if(tr[0]==NULL){ // If no arguments are given, the list of blocks is printed
         printf("******Lista de bloques asignados malloc para el proceso %d\n",getpid());
         mallocPrint();
-
     } else if (!strcmp(tr[0],"-free")){
-
-
         mallocFree(tr+1);
-
-
     } else{
-
-
         size = strtol(tr[0], NULL, 10);
         if (size==0) {
             printf("No se asignan bloques de 0 bytes\n");
@@ -714,10 +708,12 @@ void cmd_malloc(char *tr[]){
     }
 }
 
+
+//Mmap functions and auxiliary functions
 void mMapPrint(){
+/*Prints the list of mapped files*/
     tItemMem item;
     memPos p = memFirst(memlist);
-
 
     while (p!=NULL){
 
@@ -738,12 +734,15 @@ void * MmapFile (char * fichero, int protection){
     int df, map=MAP_PRIVATE, modo=O_RDONLY;
     struct stat s;
     void *p;
+
     tItemMem item;
     if (protection&PROT_WRITE) modo=O_RDWR;
     if (stat(fichero,&s)==-1 || (df=open(fichero, modo))==-1)
         return NULL;
     if ( (p=mmap(NULL,s.st_size, protection,map,df,0) )==MAP_FAILED)
         return NULL;
+
+    /*the item is created and inserted into the list*/
     item.address=p;
     item.size=s.st_size;
     item.type='2';
@@ -753,10 +752,11 @@ void * MmapFile (char * fichero, int protection){
 
     insertMemItem(item,&memlist);
 
-    return p;
+    return p; //returns the address where the file was mapped
 }
 
 void mmapFree(char *tr[]){
+/*unmaps a file*/
     tItemMem item;
     memPos pos;
     bool deleted = false;
@@ -773,10 +773,12 @@ void mmapFree(char *tr[]){
         if (item.type=='2'){
             if (!strcmp(item.data.fileName,tr[0])){
 
-                munmap(item.address,item.size);
-                close(item.data.fd);
+                if (munmap(item.address,item.size)==-1){
+                    printf("Cannot unmap: %s", strerror(errno));
+                }
+                close(item.data.fd); //file descriptor is closed
 
-                deleteAtMemPosition(pos,&memlist);
+                deleteAtMemPosition(pos,&memlist);//element is deleted from the list
                 deleted=true;
                 break;
             }
@@ -803,13 +805,12 @@ void cmd_mmap (char *tr[]){
         mMapPrint();
         return;
     }
-
     if  (!strcmp(tr[0],"-free")){
         mmapFree(tr+1);
         return;
     }
 
-    if ((perm=tr[1])!=NULL && strlen(perm)<4) {
+    if ((perm=tr[1])!=NULL && strlen(perm)<4) { //gets permisions from argument
         if (strchr(perm,'r')!=NULL) protection|=PROT_READ;
         if (strchr(perm,'w')!=NULL) protection|=PROT_WRITE;
         if (strchr(perm,'x')!=NULL) protection|=PROT_EXEC;
@@ -821,11 +822,12 @@ void cmd_mmap (char *tr[]){
     }
 }
 
-
+//Shared functions and auxiliary functions
 void sharedPrint(){
+/*prints the list of blocks allocated with shared*/
+
     tItemMem item;
     memPos p = memFirst(memlist);
-
 
     while (p!=NULL){
 
@@ -833,75 +835,73 @@ void sharedPrint(){
         if (item.type=='4'){
             printf("%p: size:%zu. shared memory (key:%d) ",item.address,item.size,item.data.key);
             printTimeFormat(item.time,2);
-
         }
-
         p= memNext(p,memlist);
     }
 }
 
 
-void * ObtainMemShmget (key_t key, size_t size)
-{ /*Obtienen un puntero a una zaona de memoria compartida*/
-/*si tam >0 intenta crearla y si tam==0 asume que existe*/
+void * ObtainMemShmget (key_t key, size_t size){
+/*Obtains a pointer to a shared memory space*/
     void * p;
     int aux,id,flags=0777;
     struct shmid_ds s;
     tItemMem item;
 
-    if (size) /*si tam no es 0 la crea en modo exclusivo esta funcion vale para shared y shared -create*/
+    if (size)
         flags=flags | IPC_CREAT | IPC_EXCL;
-    /*si tam es 0 intenta acceder a una ya creada*/
+    /*If size is 0, it is assumed that the key exists, if size>0 it tries to create it*/
 
-    if (key==IPC_PRIVATE){ /*no nos vale*/
+    if (key==IPC_PRIVATE){ /*If private key, we cannot get that shared memory space*/
         errno=EINVAL;
         return NULL;
     }
 
     if ((id=shmget(key, size, flags))==-1)
-        return (NULL);
+        return NULL;
     if ((p=shmat(id,NULL,0))==(void*) -1){
-        aux=errno; /*si se ha creado y no se puede mapear*/
-        if (size) /*entonces se borra */
+        aux=errno; /*if created but unable to map, it is deleted*/
+        if (size)
             shmctl(id,IPC_RMID,NULL);
         errno=aux;
-        return (NULL);
+        return NULL;
     }
     shmctl (id,IPC_STAT,&s);
+
+    /*item is created and inserted into the list*/
     item.address=p;
     item.type='4';
     item.size=s.shm_segsz;
-    item.time=time(NULL);
+    item.time=s.shm_atime;
     item.data.key=key;
 
     insertMemItem(item,&memlist);
+
     return (p);
 }
 
 
-void SharedCreate (char *tr[]){ /*arg[0] is the key
-                                  and arg[1] is the size*/
-
+void SharedCreate (char *tr[]){
+/*Function to create/get a shared memory address*/
     key_t k;
     size_t tam;
     void *p;
 
-    if (tr[0]==NULL || tr[1]==NULL){
+    if (tr[0]==NULL || tr[1]==NULL){ //if no arguments, the list of blocks is printed
         printf("******Lista de bloques asignados shared para el proceso %d\n",getpid());
         sharedPrint();
         return;
     }
-
     k=(key_t) atoi(tr[0]);
     tam=(size_t) atoll(tr[1]);
+
     if ((p=ObtainMemShmget(k,tam))==NULL)
         printf("Impossible to get shmget memory: %s\n", strerror(errno));
     else{
         printf ("Allocated shared memory (key %d) at %p\n",k,p);
     }
-
 }
-
+/*
 void sharedFree(char *tr[]){
 
     tItemMem item;
@@ -936,16 +936,61 @@ void sharedFree(char *tr[]){
         printf("******Lista de bloques asignados shared para el proceso %d\n",getpid());
         sharedPrint();
     }
+}
+ */
 
+void sharedFree(char *tr[]){
+/*Detaches the shared memory block with key specified*/
+    tItemMem item;
+    memPos pos;
+    bool deleted = false;
+    key_t k;
+    int id;
+
+    if (tr[0]==NULL){
+        printf("******Lista de bloques asignados shared para el proceso %d\n",getpid());
+        return;
+    }
+    k=(key_t) atoi(tr[0]);
+
+    if (k==IPC_PRIVATE){ /*If private key, we cannot get that shared memory space*/
+        printf("Cannot free shared memory of key %d: %s",k, strerror(EINVAL));
+        return;
+    }
+
+    if ((id=shmget(k, 0, 0777))==-1){
+        printf("Cannot free shared memory of key %d: %s",k, strerror(EINVAL));
+        return;
+    }
+
+    pos= memFirst(memlist);
+    while (pos!=NULL){
+
+        item= getMemItem(pos,memlist);
+        if (item.type=='4'){
+            if (item.data.key==k){
+                if(shmdt(item.address)==-1){
+                    printf("Cannot detach: %s", strerror(errno));
+                }
+                deleteAtMemPosition(pos,&memlist);
+                deleted=true;
+                break;
+            }
+        }
+        pos = memNext(pos,memlist);
+    }
+    if(!deleted){
+        printf("******Lista de bloques asignados shared para el proceso %d\n",getpid());
+        sharedPrint();
+    }
 }
 
 void sharedDeletekey(char *tr[]){
+/*Removes the shared memory region specified*/
     key_t k;
     int id, flags=0777;
-    void *p;
 
-
-    if (tr[0]==NULL){
+    if (tr[0]==NULL){//if no key given, prints the list of blocks
         printf("******Lista de bloques asignados shared para el proceso %d\n",getpid());
         sharedPrint();
         return;
@@ -953,7 +998,7 @@ void sharedDeletekey(char *tr[]){
     k=(key_t) atoi(tr[0]);
 
     if ((id=shmget(k, 0, flags))==-1){
-        strerror(errno);
+        printf("Cannot get shared memory of key %d: %s",k,strerror(errno));
         return;
     }
     shmctl(id,IPC_RMID,NULL);
@@ -961,10 +1006,7 @@ void sharedDeletekey(char *tr[]){
 
 
 void cmd_shared(char *tr[]){
-    /*shared [-free|-create|-delkey ] cl [tam] Gets shared memory of key cl,
-     * maps it in the proccess address space and shows the memory address
-     * where the shared memory has been mapped.*/
-    void * p;
+/*gets shared memory of key cl, maps it in the process address space and shows the memory address*/
 
     if (tr[0]==NULL){
         printf("******Lista de bloques asignados shared para el proceso %d\n",getpid());
@@ -990,12 +1032,18 @@ void cmd_shared(char *tr[]){
 }
 
 void allBlocksPrint(){
+//prints all blocks
     mallocPrint();
     mMapPrint();
     sharedPrint();
 }
 
-bool deallocAdress(char *tr[]){
+//Dealloc command function and auxiliary functions
+
+bool deallocAddress(char *tr[]){
+/* Dealloc a block by getting its address
+ * returns true if an address is deleted, false otherwise
+ * */
     memPos pos;
     tItemMem item;
 
@@ -1014,23 +1062,23 @@ bool deallocAdress(char *tr[]){
 
         printf("block at address %p deallocated ",item.address);
         switch (item.type) {
-            case '1':
+            case '1': //malloc
                 printf("(malloc)\n");
                 free(item.address);
                 deleteAtMemPosition(pos,&memlist);
                 break;
-            case '2':
+            case '2': //mmap
                 printf("(mmap)\n");
                 munmap(item.address,item.size);
                 close(item.data.fd);
                 deleteAtMemPosition(pos,&memlist);
                 break;
-            case '4':
+            case '4': //shared
                 printf("(shared)\n");
                 munmap(item.address,item.size);
                 deleteAtMemPosition(pos,&memlist);
                 break;
-            default:
+            default: //default option (shouldn't occur)
                 printf("Error\n");
                 break;
         }
@@ -1040,6 +1088,7 @@ bool deallocAdress(char *tr[]){
 }
 
 void cmd_dealloc(char *tr[]){
+/*Function to perform the dealloc command*/
 
     if (tr[0]==NULL){
         printf("******List of blocks assigned for the process %d\n",getpid());
@@ -1051,38 +1100,41 @@ void cmd_dealloc(char *tr[]){
     } else if (!strcmp(tr[0],"-shared")){
         sharedFree(tr+1);
     } else{
-        if (!deallocAdress(tr)){
+        if (!deallocAddress(tr)){ //if no element deleted, prints the list
             printf("******List of blocks assigned for the process %d\n",getpid());
             allBlocksPrint();
         }
     }
 }
 
-void dopmap (void) {
 
-    pid_t pid; /*ejecuta el comando externo pmap para */
-    char elpid[32]; /*pasandole el pid del proceso actual */
+//Function memoria and auxiliary functions
+void dopmap (void) {
+/*Calls the program pmap for the shell process*/
+
+    pid_t pid;
+    char elpid[32];
     char *argv[3]= {"pmap",elpid,NULL};
 
     sprintf (elpid,"%d", (int) getpid());
 
     if ((pid=fork())==-1){
-        perror ("Imposible crear proceso");
+        printf("Cannot create process: %s",strerror(errno));
         return;
     }
     if (pid==0){
         if (execvp(argv[0],argv)==-1)
-            perror("cannot execute pmap");
+            printf("cannot execute pmap: %s",strerror(errno));
         exit(1);
     }
     waitpid (pid,NULL,0);
 }
 
 void cmd_memoria(char *tr[]){
+/*Function to perform the memoria command*/
 
-    int l1=1,l2=2,l3=3;
-    static int s1=1, s2=2, s3=3;
-
+    int l1=1,l2=2,l3=3; //local initialized variables for the memoria -vars command
+    static int s1=1, s2=2, s3=3; //static initialized variables for the memoria -vars command
 
     if((tr[0]==NULL || !strcmp(tr[0],"-all")) || !strcmp(tr[0],"-vars")){
         printf("Local  Variables\t%p,\t%p,\t%p\n",&l1,&l2,&l3);
@@ -1108,23 +1160,14 @@ void cmd_memoria(char *tr[]){
         printf("Error: option %s is not valid\n",tr[0]);
 }
 
-/*
-void hexprint(unsigned char byte){ //TODO:cambiar esto
-    if (byte == 10){
-        printf("\\n ");
-    } else if((byte < 32) || (byte > 126)){
-        printf("   ");
-    }
-    else printf(" %c ", byte);
-}
- */
 
-
+//Volcarmem function and auxiliary functions
 void volcarmemaux(void *addr, int cont){
+/*auxiliar function to volcarmem*/
 
     int i,j=0;
     unsigned char *ad = (unsigned char*) addr;
-    unsigned char hex[25];
+    unsigned char hex[25]="";
 
     while (j<cont) {
         for (i = 0; i < 25; i++) {
@@ -1152,6 +1195,7 @@ void volcarmemaux(void *addr, int cont){
 
 
 void cmd_volcarmem(char *tr[]){
+/*Shows the contents of cont bytes starting at memory address addr*/
 
     int cont=25;
     void* addr;
@@ -1166,7 +1210,9 @@ void cmd_volcarmem(char *tr[]){
     volcarmemaux(addr,cont);
 }
 
+//Llenarmem function and auxiliary functions
 void llenarmemaux(void *addr,int cont,unsigned char byte){
+/*Auxiliar function to llenarmem*/
 
     int i;
     unsigned char *ad = (unsigned char*) addr;
@@ -1186,6 +1232,7 @@ void llenarmemaux(void *addr,int cont,unsigned char byte){
 }
 
 void cmd_llenarmem(char *tr[]){
+/*Fills cont bytes of memory starting at address addr with the value ’byte’*/
 
     int cont=128;
     unsigned char bytesel;
@@ -1213,8 +1260,10 @@ void cmd_llenarmem(char *tr[]){
     llenarmemaux(addr,cont,bytesel);
 }
 
-
+//Recursiva function and auxiliary functions
 void doRecursiva (int n){
+/*Function to do the recursion of the command recursiva*/
+
     char automatico[TAMANO];
     static char estatico[TAMANO];
     printf ("parameter n:%3d(%p) ",n,&n);
@@ -1226,9 +1275,9 @@ void doRecursiva (int n){
 }
 
 void cmd_recursiva(char *tr[]){
+/*calls the recursive functions n times*/
 
     int n;
-
     if (tr[0]==NULL)
         return;
     n = atoi(tr[0]);
@@ -1236,28 +1285,30 @@ void cmd_recursiva(char *tr[]){
     doRecursiva(n);
 }
 
+//e-s command functions
+ssize_t readFile (char *fich, void *p, ssize_t n){
+/*reads n bytes from file fich to memory address p, aux to e_s_read*/
 
-ssize_t readFile (char *fich, void *p, ssize_t n)
-{ /* le n bytes del fichero fich en p */
-    ssize_t nleidos,tam=n; /*si n==-1 lee el fichero completo*/
-    int df, aux;
+    ssize_t nread,tam=n; /*if n==1 reads the hole file*/
+    int fd, aux;
     struct stat s;
-    if (stat (fich,&s)==-1 || (df=open(fich,O_RDONLY))==-1){ //error here
+    if (stat (fich,&s)==-1 || (fd=open(fich,O_RDONLY))==-1){
         return ((ssize_t)-1);
     }
     if (n==LEERCOMPLETO)
         tam=(ssize_t) s.st_size;
-    if ((nleidos=read(df,p, tam))==-1){
+    if ((nread=read(fd,p, tam))==-1){
         aux=errno;
-        close(df);
+        close(fd);
         errno=aux;
         return ((ssize_t)-1);
     }
-    close (df);
-    return (nleidos);
+    close (fd);
+    return (nread);
 }
 
 void e_s_read(char *tr[]){
+/*function to execute the command e-s read*/
 
     void *addr;
     ssize_t cont=-1,aux;
@@ -1276,9 +1327,10 @@ void e_s_read(char *tr[]){
 }
 
 ssize_t writeFile (char *fich, void *p, ssize_t n,bool overwrite) {
-    /* le n bytes del fichero fich en p */
-    ssize_t nleidos,tam=n; /*si n==-1 lee el fichero completo*/
-    int df, aux;
+/* writes n bytes from address p to fich */
+
+    ssize_t nwritten,tam=n; /*si n==-1 lee el fichero completo*/
+    int fd, aux;
     struct stat s;
     int flags= O_CREAT | O_WRONLY;
 
@@ -1287,18 +1339,18 @@ ssize_t writeFile (char *fich, void *p, ssize_t n,bool overwrite) {
     else
         flags|=O_TRUNC;
 
-    if ((df=open(fich,flags,0664))==-1 || stat (fich,&s)==-1){//error here TODO: stat se puede quitar
+    if ((fd=open(fich,flags,0664))==-1 || stat (fich,&s)==-1){//error here TODO: stat se puede quitar
         return ((ssize_t)-1);
     }
 
-    if ((nleidos=write(df,p, tam))==-1){
+    if ((nwritten=write(fd,p, tam))==-1){
         aux=errno;
-        close(df);
+        close(fd);
         errno=aux;
         return ((ssize_t)-1);
     }
-    close (df);
-    return (nleidos);
+    close (fd);
+    return nwritten;
 }
 
 void e_s_write(char *tr[], bool overwrite){
