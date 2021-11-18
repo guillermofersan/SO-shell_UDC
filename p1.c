@@ -177,27 +177,32 @@ void cmd_ayuda(char *tr[]){
 /*prints help for different commands*/
     if(tr[0]==NULL) printf("Avaiable commands:\n-> autores\n-> ayuda\n-> borrar\n-> borrarrec\n-> bye\n-> carpeta\n-> comando\n-> crear\n-> dealloc\n-> e-s\n-> fecha\n-> fin\n-> hist\n-> infosis\n-> listdir\n-> listfich\n-> llenarmem\n-> malloc\n-> memoria\n-> mmap\n-> pid\n-> recursiva\n-> salir\n-> shared\n-> volcarmem\n");
     else if(!strcmp(tr[0],"autores")) printf("autores [-l|-n]: Prints the names and logins of the program authors.\n");
-    else if(!strcmp(tr[0],"pid")) printf("pid [-p]: Prints the pid of the process executing the shell.\n");
-    else if(!strcmp(tr[0],"carpeta")) printf("carpeta [direct]: Changes the current working directory of the shell to direct. When invoked without auguments it prints the current working directory.\n");
-    else if(!strcmp(tr[0],"fecha")) printf("fecha [-d] [-h]: Prints both the current date and the current time.\n\n\t-d\tprints the current date in the format DD/MM/YYYY.\n\t-h\tprints the current time in the format hh:mm:ss.\n\n");
-    else if(!strcmp(tr[0],"hist")) printf("hist [-c][-N]: Shows the historic of commands executed by this shell in order.\n\n\t-c\tclears the historic.\n\t-N\tprints the first N comands\n\n");
-    else if(!strcmp(tr[0],"comando")) printf("comando N: Repeats command number N\n");
-    else if(!strcmp(tr[0],"infosis")) printf("infosis: Prints information on the machine running the shell\n");
-    else if(!strcmp(tr[0],"ayuda")) printf("ayuda [cmd]: ayuda displays a list of available commands.\n\n\t[cmd]\tgives a brief help on the usage of comand cmd\n\n");
-    else if(!strcmp(tr[0],"fin")) printf("fin: Ends the shell\n");
-    else if(!strcmp(tr[0],"bye")) printf("bye: Ends the shell\n");
-    else if(!strcmp(tr[0],"salir")) printf("salir: Ends the shell\n");
-    else if(!strcmp(tr[0],"crear")) printf("crear [-f] [name]: Creates a directory or file in the file system.\nIf no names are given, shows the current directory\n\n\tcrear [name]\t%s\n\tcrear -f [name]\t%s\n\n","creates an empty directory with name [name]","creates an empty file with name [name]");
-    else if(!strcmp(tr[0],"borrar")) printf("borrar name1 name2...: Deletes files and/or empty directories\n");
-    else if(!strcmp(tr[0],"borrarrec")) printf("borrarrec name1 name2...: Deletes files and/or non empty directories. If the directory is not empty it is deleted with all its contents\n");
-    else if(!strcmp(tr[0],"listfich")){
-        printf("listfich [-long] [-link] [-acc] name1 name2 name3...: Gives info on files, directories, etc. entered\nIf no options are given, it prints the size and the name of each file.\nIf no names are given it prints the current directory\n");
-        printf("\n\t-long\tprints the information in long listing mode\n\t-link\tif long is applied and the file is a symbolic link, the name of the file it points to is also printed \t\n\t-acc\tlast access time will be used instead of last modification time\n\n");
-    }
-    else if(!strcmp(tr[0],"listdir")){
-        printf("listdir [-reca] [-recb] [-hid] [-long] [-link] [-acc] name1 name2...: Lists the contents of directories with names name1, name2...\nIf no options are given, it prints the size and the name of each file.\nIf no names are given it prints the current directory\nIf the name inserted is a file, it prints the information about the file\n");
-        printf("\n\t-long\tprints the information in long listing mode\n\t-link\tif long is applied and the file is a symbolic link, the name of the file it points to is also printed \t\n\t-acc\tlast access time will be used instead of last modification time");
-        printf("\n\t-hid\thidden files and/or directories will also get listed\n\t-reca\tprints subdirectories and its content recursively after all the files in the directory\n\t-recb\tprints subdirectories and its content recursively before all the files in the directory\n\n");
+    else if(!strcmp(tr[0],"pid")) printf("pid [-p]: Prints the pid of the process or parent process of the shell.\n");
+    else if(!strcmp(tr[0],"carpeta")) printf("carpeta [dir]: Changes (or shows) the current working directory of the shell to direct.\n");
+    else if(!strcmp(tr[0],"fecha")) printf("fecha [-d] [-h]: Prints the current date and/or the current time.\n");
+    else if(!strcmp(tr[0],"hist")) printf("hist [-c][-N]: Shows the historic of commands executed by this shell in order. hist -c clears the historic.\n");
+    else if(!strcmp(tr[0],"comando")) printf("comando N: Repeats command number N.\n");
+    else if(!strcmp(tr[0],"infosis")) printf("infosis: Prints information on the machine running the shell.\n");
+    else if(!strcmp(tr[0],"ayuda")) printf("ayuda [cmd]: ayuda displays a list of available commands.\n");
+    else if(!strcmp(tr[0],"fin")) printf("fin: Ends the shell.\n");
+    else if(!strcmp(tr[0],"bye")) printf("bye: Ends the shell.\n");
+    else if(!strcmp(tr[0],"salir")) printf("salir: Ends the shell.\n");
+    else if(!strcmp(tr[0],"crear")) printf("crear [-f] [name]: Creates a directory or file in the file system.\n");
+    else if(!strcmp(tr[0],"borrar")) printf("borrar name1 name2...: Deletes files and/or empty directories.\n");
+    else if(!strcmp(tr[0],"borrarrec")) printf("borrarrec name1 name2...: Deletes files and/or non empty directories. If the directory is not empty it is deleted with all its contents.\n");
+    else if(!strcmp(tr[0],"listfich"))printf("listfich [-long] [-link] [-acc] name1 name2 name3...: Gives info on files or directories entered.\n");
+    else if(!strcmp(tr[0],"listdir")) printf("listdir [-reca] [-recb] [-hid] [-long] [-link] [-acc] name1 name2...: Lists the contents of directories with names name1, name2...\n");
+    else if(!strcmp(tr[0],"malloc")) printf("malloc [-free] tam: The shell allocates (or deallocates) tam bytes of memory in the program.\n");
+    else if(!strcmp(tr[0],"mmap ")) printf("mmap [-free] fich perm : maps (or unmaps) files in the directory space of the process.\n");
+    else if(!strcmp(tr[0],"shared")) printf("shared [-free|-create|-delkey ] cl tam: Allocates(or deallocates shared memory in the program\n");
+    else if(!strcmp(tr[0],"dealloc")) printf("dealloc [-malloc|-shared|-mmap]: deallocates one of the memory blocks allocated with the command malloc, mmap or shared\n");
+    else if(!strcmp(tr[0],"memoria")) printf("memoria [-blocks] [-vars] [-funcs] [-all] [-pmap]: Shows details of the process memory.\n");
+    else if(!strcmp(tr[0],"volcarmem")) printf("volcarmem addr cont: dumps in screen the contents (cont bytes) of the memory position addr.\n");
+    else if(!strcmp(tr[0],"llenarmem")) printf("llenarmem addr cont byte: Fills cont bytes of memory starting at address addr with the value byte\n");
+    else if(!strcmp(tr[0],"recursiva")) printf("recursiva n: calls the recursive function n times\n");
+    else if(!strcmp(tr[0],"e-s")){
+        printf("      read fich addr cont: reads cont bytes from file fich into memory address addr\n");
+        printf("write [-o] fich addr cont: writes cont bytes frommemory address addr into file fich\n");
     }
     else printf("%s is not a command\n",tr[0]);
 }
@@ -901,43 +906,6 @@ void SharedCreate (char *tr[]){
         printf ("Allocated shared memory (key %d) at %p\n",k,p);
     }
 }
-/*
-void sharedFree(char *tr[]){
-
-    tItemMem item;
-    memPos pos;
-    bool deleted = false;
-    key_t k;
-
-    if (tr[0]==NULL){
-        printf("******Lista de bloques asignados shared para el proceso %d\n",getpid());
-        sharedPrint();
-        return;
-    }
-
-    k=(key_t) atoi(tr[0]);
-    pos= memFirst(memlist);
-    while (pos!=NULL){
-
-        item= getMemItem(pos,memlist);
-        if (item.type=='4'){
-            if (item.data.key==k){
-
-                munmap(item.address,item.size);
-
-                deleteAtMemPosition(pos,&memlist);
-                deleted=true;
-                break;
-            }
-        }
-        pos = memNext(pos,memlist);
-    }
-    if(!deleted){
-        printf("******Lista de bloques asignados shared para el proceso %d\n",getpid());
-        sharedPrint();
-    }
-}
- */
 
 void sharedFree(char *tr[]){
 /*Detaches the shared memory block with key specified*/
@@ -945,7 +913,6 @@ void sharedFree(char *tr[]){
     memPos pos;
     bool deleted = false;
     key_t k;
-    int id;
 
     if (tr[0]==NULL){
         printf("******Lista de bloques asignados shared para el proceso %d\n",getpid());
@@ -953,17 +920,6 @@ void sharedFree(char *tr[]){
     }
     k=(key_t) atoi(tr[0]);
 
-    if (k==IPC_PRIVATE){ /*If private key, we cannot get that shared memory space*/
-        printf("Cannot free shared memory of key %d: %s",k, strerror(EINVAL));
-        return;
-    }
-
-    /*
-    if ((id=shmget(k, 0, 0777))==-1){
-        printf("Cannot free shared memory of key %d: %s",k, strerror(EINVAL));
-        return;
-    }
-    */
 
     pos= memFirst(memlist);
     while (pos!=NULL){
@@ -1250,7 +1206,7 @@ void cmd_llenarmem(char *tr[]){
     if (tr[1]==NULL)
         printf("%s",tr[2]);
 
-    if (tr[1]!=NULL && tr[2]!=NULL){ //TODO:buscar forma mas optima o algo nose
+    if (tr[1]!=NULL && tr[2]!=NULL){
         if (tr[2][0]=='0'&&tr[2][1]=='x')
             bytesel= (unsigned char) strtol(tr[2], NULL, 16);
         else if (tr[2][0]=='\'' && tr[2][2]=='\'')
@@ -1341,7 +1297,7 @@ ssize_t writeFile (char *fich, void *p, ssize_t n,bool overwrite) {
     else
         flags|=O_TRUNC;
 
-    if ((fd=open(fich,flags,0664))==-1 || stat (fich,&s)==-1){//error here TODO: stat se puede quitar
+    if ((fd=open(fich,flags,0664))==-1 || stat (fich,&s)==-1){
         return ((ssize_t)-1);
     }
 
@@ -1426,7 +1382,7 @@ int main (int argc, char*argv[]) {
     createMemList(&memlist);
 
     while(1){
-        printf( "\x1b[31m" "ඞ" "\x1b[0m");
+        printf( "\x1b[32m" ">> " "\x1b[0m");
         fgets(linea, MAXLINEA, stdin);
         tItemL item;
 
