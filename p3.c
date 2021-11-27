@@ -26,6 +26,7 @@
 #include <sys/resource.h>
 
 
+
 #include "list.h"
 #include "memlist.h"
 
@@ -35,6 +36,7 @@
 #define st_atime st_atim.tv_sec
 #define st_mtime st_mtim.tv_sec
 #define LEERCOMPLETO ((ssize_t)-1)
+
 
 extern char **environ;
 
@@ -485,7 +487,6 @@ void printTimeFormat(time_t t, int i){
         printf("%s", ctime(&t));
     }
 }
-
 
 void printFile(bool longListing, bool link, bool acc, char* name){
 /*prints the information of a file depending on the options specified*/
@@ -1420,12 +1421,17 @@ void cmd_priority(char *tr[]){
 void redError(char *file){
     int fd;
     fflush(stderr);
+
     if ((fd=open(file,O_WRONLY |O_CREAT | O_EXCL, 0644))==-1){
         perror("");
         return;
     }
+    if (dup2(fd,STDERR_FILENO)==-1){
+        close(fd);
+        perror("");
+        return;
+    }
 
-    dup2(fd,STDERR_FILENO);
     close(fd);
     printf("cambiado a %s\n",file);
 }
@@ -1435,12 +1441,19 @@ void redReset(){
     dup2(STDOUT_FILENO,STDERR_FILENO);
 }
 
-void rederrFile(){ //todo: function to print file name of the redirected errors
+void rederrFile(){ //todo: doesnt always work, mirar de hacer variable global o algo
 
-   // printf("File name: %s\n",stderr);
+    char path[4096]="",linkName[4096]="";
+    sprintf(path, "/proc/self/fd/%d",STDERR_FILENO);
 
+    if(readlink(path, linkName, sizeof(linkName)-1)==-1){
+        perror("");
+    } else {
+        if (!strcmp(linkName, "/dev/pts/0"))
+            printf("standard error in original configuration file\n");
+        else printf("%s\n", linkName);
+    }
 }
-
 
 void cmd_rederr(char *tr[]){
 
@@ -1566,14 +1579,68 @@ void cmd_cambiarvar(char *tr[]){
         printf("Use: cambiarvar [-a|-e|-p] var value\n");
 }
 
-void cmd_uid(char *tr[]){
 
 
+uid_t userUid (char * nombre)
+{
+    struct passwd *p;
+    if ((p=getpwnam (nombre))==NULL)
+        return (uid_t) -1;
+    return p->pw_uid;
+}
+
+char * username (uid_t uid)
+{
+    struct passwd *p;
+    if ((p=getpwuid(uid))==NULL)
+        return ("??????");
+    return p->pw_name;
+}
+
+void processUid (){
+
+    uid_t real=getuid(), efec=geteuid();
+    printf ("Credencial real: %d, (%s)\n", real, username (real));
+    printf ("Credencial efectiva: %d, (%s)\n", efec, username (efec));
+}
+
+void cmd_uid(char *tr[]){ //todo: comprobar funcion
+
+    uid_t id;
+
+     if (tr[0]!=NULL && !strcmp(tr[0],"-set")){
+
+        if (tr[1]==NULL){
+            printf("Use: uid -get|-set [-l] id\n");
+            return;
+        }
+
+        if (!strcmp(tr[1],"-l") && tr[2]!=NULL){
+            if ((id=userUid(tr[2]))== (uid_t) -1){
+                printf("login %s not valid\n", tr[2]);
+                return;
+            }
+        } else
+            id = strtol(tr[1],NULL,10);
+
+        if (setuid(id)==-1)
+            perror("Unable to change credential");
+
+    } else{
+         processUid();
+    }
 
 }
 
 void cmd_fork(char *tr[]){
 
+    pid_t pid;
+
+    if((pid=fork())==0){
+        printf("executing process %d\n",getpid());
+    }
+
+    waitpid(pid,NULL,0);
 
 }
 
