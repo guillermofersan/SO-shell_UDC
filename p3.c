@@ -1,5 +1,5 @@
 /*
- * SO LabAssignment1
+ * SO LabAssignment2
  *
  * AUTHOR 1: Guillermo Fernández Sánchez | login: guillermo.fernandezs
  * AUTHOR 2: Javier Fernández Rozas      | login: j.frozas
@@ -23,6 +23,7 @@
 #include <grp.h>
 #include <sys/shm.h>
 #include <sys/wait.h>
+#include <sys/resource.h>
 
 
 #include "list.h"
@@ -35,10 +36,13 @@
 #define st_mtime st_mtim.tv_sec
 #define LEERCOMPLETO ((ssize_t)-1)
 
+extern char **environ;
+
 /*GLOBAL VARIABLES*/
 tList list;
 bool iscmd;
 memList memlist;
+
 
 /*global variables for memoria command*/
 int g1=1,g2=2,g3=3;
@@ -70,6 +74,26 @@ void cmd_volcarmem(char **);
 void cmd_llenarmem(char **);
 void cmd_recursiva(char **);
 void cmd_e_s(char **);
+void cmd_priority(char **);
+void cmd_rederr(char **);
+void cmd_entorno(char **);
+void cmd_mostrarvar(char **);
+void cmd_cambiarvar(char **);
+void cmd_uid(char **);
+void cmd_fork(char **);
+void cmd_ejec(char **);
+void cmd_ejecpri(char **);
+void cmd_fg(char **);
+void cmd_fgpri(char **);
+void cmd_back(char **);
+void cmd_backpri(char **);
+void cmd_ejecas(char **);
+void cmd_fgas(char **);
+void cmd_bgas(char **);
+void cmd_listjobs(char **);
+void cmd_job(char **);
+void cmd_borrarjobs(char **);
+
 
 
 struct CMD{
@@ -104,9 +128,30 @@ struct CMD C[]={
         {"llenarmem", cmd_llenarmem},
         {"recursiva", cmd_recursiva},
         {"e-s", cmd_e_s},
+        {"priority", cmd_priority},
+        {"rederr", cmd_rederr},
+        {"entorno", cmd_entorno},
+        {"mostrarvar", cmd_mostrarvar},
+        {"cambiarvar", cmd_cambiarvar},
+        {"uid", cmd_uid},
+        {"fork", cmd_fork},
+        {"ejec", cmd_ejec},
+        {"ejecpri", cmd_ejecpri},
+        {"fg", cmd_fg},
+        {"fgpri", cmd_fgpri},
+        {"back", cmd_back},
+        {"backpri", cmd_backpri},
+        {"ejecas", cmd_ejecas},
+        {"fgas", cmd_fgas},
+        {"bgas", cmd_bgas},
+        {"listjobs", cmd_listjobs},
+        {"job", cmd_job},
+        {"borrarjobs", cmd_borrarjobs},
         {NULL ,NULL}
 };
 
+
+/*P0 FUNCTIONS*/
 
 void cmd_autores (char *tr[]){
 /*prints the authors logins and/or names depending on the command's argument*/
@@ -140,7 +185,7 @@ void cmd_carpeta(char *tr[]){
         printf("%s\n", getcwd(dir, MAXLINEA));
     else{
         if(chdir(tr[0]) == -1){
-            printf("Cannot change dir %s: %s\n", tr[0], strerror(errno));
+            perror("Cannot change directory");
         }
     }
 }
@@ -283,6 +328,7 @@ void cmd_comando(char *nchar[]){
     iscmd=false;
 }
 
+/*P1 FUNCTIONS*/
 
 void cmd_crear(char *tr[]){
 /*creates a file or a directory with name specified*/
@@ -293,14 +339,14 @@ void cmd_crear(char *tr[]){
         if (tr[1]==NULL) cmd_carpeta(tr+1);//if no name is inserted, the current directory is printed
         else{
             if ((f = open(tr[1],O_CREAT | O_EXCL, 0664))==-1){//permissions -rw-rw-r--
-                printf("Unable to create file %s: %s\n",tr[1],strerror(errno));
+                perror("Unable to create file");
             }
             close(f);
         }
     }
     else {
         if(mkdir(tr[0],0775)==-1){ //permissions drwxrwxr-x
-            printf("Unable to create directory %s: %s\n",tr[0],strerror(errno));
+            perror("Unable to create directory");
         }
     }
 }
@@ -332,9 +378,9 @@ void cmd_borrar(char *tr[]){
     while (tr[i]!=NULL){
 
         if (isDir(tr[i])){
-            if (rmdir(tr[i])==-1) printf("Unable to delete %s: %s\n", tr[i], strerror(errno));
+            if (rmdir(tr[i])==-1) perror("Unable to delete");
         } else{
-            if (unlink(tr[i])==-1) printf("Unable to delete %s: %s\n", tr[i], strerror(errno));
+            if (unlink(tr[i])==-1) perror("Unable to delete");
         }
         i++;
     }
@@ -361,7 +407,7 @@ void deleteDir(const char *path){
                 if (isDir(path2)){
                     deleteDir(path2);
                 }else{
-                    if (unlink(path2)==-1) printf("Unable to delete %s: %s",path2, strerror(errno));
+                    if (unlink(path2)==-1) perror("Unable to delete");
                 }
             }
         }
@@ -369,9 +415,8 @@ void deleteDir(const char *path){
     }
 
     if(rmdir(path)==-1){
-        printf("Unable to delete %s: %s\n",path, strerror(errno));
+        perror("Unable to delete");
     }
-
 }
 
 
@@ -389,7 +434,7 @@ void cmd_borrarrec(char *tr[]){
 
         if(isDir(tr[i])){
             deleteDir(tr[i]);
-        } else if (unlink(tr[i])==-1) printf("Unable to delete %s: %s\n",tr[i], strerror(errno));
+        } else if (unlink(tr[i])==-1) perror("Unable to delete");
 
         i++;
     }
@@ -478,11 +523,11 @@ void printFile(bool longListing, bool link, bool acc, char* name){
             if ((readlink(name, linkName, sizeof(linkName)-1)) != -1){
                 printf("->%s", basename(linkName));
             } else
-                printf("Cannot access link: %s", strerror(errno));
+                perror("Unable to access link");
         }
 
         printf("\n");
-    } else printf("cannot access %s: %s\n",name,strerror(errno));
+    } else perror("Unable to access file or directory");
 }
 
 
@@ -623,7 +668,7 @@ void cmd_listdir(char *tr[]){
     }
 }
 
-/* LAB ASSIGNMENT 2 FUNCTIONS*/
+/* P2 FUNCTIONS*/
 
 //Malloc functions and auxiliary functions
 void mallocPrint(){
@@ -699,7 +744,7 @@ void cmd_malloc(char *tr[]){
         }
 
         if ( (address = malloc(size)) == NULL )
-            printf("Imposible obtener memoria con malloc: %s\n", strerror(errno));
+            perror("Unable to allocate memory with malloc");
         else{
             printf("allocated %zu at %p\n",size,address);
 
@@ -779,7 +824,7 @@ void mmapFree(char *tr[]){
             if (!strcmp(item.data.fileName,tr[0])){
 
                 if (munmap(item.address,item.size)==-1){
-                    printf("Cannot unmap: %s", strerror(errno));
+                    perror("Unable to unmap");
                 }
                 close(item.data.fd); //file descriptor is closed
 
@@ -821,7 +866,7 @@ void cmd_mmap (char *tr[]){
         if (strchr(perm,'x')!=NULL) protection|=PROT_EXEC;
     }
     if ((p=MmapFile(tr[0],protection))==NULL)
-        printf("Impossible to map file: %s\n", strerror(errno));
+        perror("Unable to map file");
     else{
         printf ("file %s mapped in %p\n", tr[0], p);
     }
@@ -901,7 +946,7 @@ void SharedCreate (char *tr[]){
     tam=(size_t) atoll(tr[1]);
 
     if ((p=ObtainMemShmget(k,tam))==NULL)
-        printf("Impossible to get shmget memory: %s\n", strerror(errno));
+        perror("Impossible to get shmget memory");
     else{
         printf ("Allocated shared memory (key %d) at %p\n",k,p);
     }
@@ -916,6 +961,7 @@ void sharedFree(char *tr[]){
 
     if (tr[0]==NULL){
         printf("******Lista de bloques asignados shared para el proceso %d\n",getpid());
+        sharedPrint();
         return;
     }
     k=(key_t) atoi(tr[0]);
@@ -928,7 +974,7 @@ void sharedFree(char *tr[]){
         if (item.type=='4'){
             if (item.data.key==k){
                 if(shmdt(item.address)==-1){
-                    printf("Cannot detach: %s", strerror(errno));
+                    perror("Cannot detach");
                 }
                 deleteAtMemPosition(pos,&memlist);
                 deleted=true;
@@ -956,7 +1002,7 @@ void sharedDeletekey(char *tr[]){
     k=(key_t) atoi(tr[0]);
 
     if ((id=shmget(k, 0, flags))==-1){
-        printf("Cannot get shared memory of key %d: %s",k,strerror(errno));
+        perror("Cannot get shared memory");
         return;
     }
     shmctl(id,IPC_RMID,NULL);
@@ -1031,9 +1077,9 @@ bool deallocAddress(char *tr[]){
                 close(item.data.fd);
                 deleteAtMemPosition(pos,&memlist);
                 break;
-            case '4': //shared
+            case '4':
                 printf("(shared)\n");
-                munmap(item.address,item.size);
+                shmdt(item.address);
                 deleteAtMemPosition(pos,&memlist);
                 break;
             default: //default option (shouldn't occur)
@@ -1077,12 +1123,12 @@ void dopmap (void) {
     sprintf (elpid,"%d", (int) getpid());
 
     if ((pid=fork())==-1){
-        printf("Cannot create process: %s",strerror(errno));
+        perror("Cannot create process");
         return;
     }
     if (pid==0){
         if (execvp(argv[0],argv)==-1)
-            printf("cannot execute pmap: %s",strerror(errno));
+            perror("cannot execute pmap");
         exit(1);
     }
     waitpid (pid,NULL,0);
@@ -1279,7 +1325,7 @@ void e_s_read(char *tr[]){
     addr = (void*) strtol(tr[1],NULL,16);
 
     if ((aux=readFile(tr[0],addr,cont))==-1)
-        printf("Imposible leer fichero %s: %s\n",tr[0], strerror(errno));
+        perror("Unable to read file");
     else
         printf("read %zd bytes of %s in %p\n", aux,tr[0],addr);
 }
@@ -1289,7 +1335,6 @@ ssize_t writeFile (char *fich, void *p, ssize_t n,bool overwrite) {
 
     ssize_t nwritten,tam=n; /*si n==-1 lee el fichero completo*/
     int fd, aux;
-    struct stat s;
     int flags= O_CREAT | O_WRONLY;
 
     if (!overwrite)
@@ -1297,7 +1342,7 @@ ssize_t writeFile (char *fich, void *p, ssize_t n,bool overwrite) {
     else
         flags|=O_TRUNC;
 
-    if ((fd=open(fich,flags,0664))==-1 || stat (fich,&s)==-1){
+    if ((fd=open(fich,flags,0664))==-1){
         return ((ssize_t)-1);
     }
 
@@ -1324,7 +1369,7 @@ void e_s_write(char *tr[], bool overwrite){
     addr = (void*) strtol(tr[1],NULL,16);
 
     if ((aux=writeFile(tr[0],addr,cont,overwrite))==-1)
-        printf("Unable to write file %s: %s\n",tr[0], strerror(errno));
+        perror("Unable to write file");
     else
         printf("writen %zd bytes to %s from %p\n", aux,tr[0],addr);
 }
@@ -1332,7 +1377,7 @@ void e_s_write(char *tr[], bool overwrite){
 void cmd_e_s(char *tr[]){
 
     if (tr[0]==NULL)
-        printf("uso: e-s [read|write] ......");
+        printf("uso: e-s [read|write] ......\n");
     else if (!strcmp(tr[0],"write")){
         if (tr[1]!=NULL && !strcmp(tr[1],"-o"))
             e_s_write(tr+2,true);
@@ -1341,6 +1386,255 @@ void cmd_e_s(char *tr[]){
     }
     else if (!strcmp(tr[0],"read"))
         e_s_read(tr+1);
+}
+
+/*P3 FUNCTIONS*/
+
+void cmd_priority(char *tr[]){
+
+    int pid=getpid(), value,prio;
+    errno=0;
+
+    if (tr[0]==NULL){
+        if  ((prio=getpriority(PRIO_PROCESS,0))==-1 && errno!=0)
+            perror("Unable to obtain priority of process");
+        else
+            printf("Priority of process %d is %d\n",pid, prio);
+    }
+    else if (tr[1]==NULL){
+        pid = (int) strtol(tr[0],NULL,10);
+        if  ((prio=getpriority(PRIO_PROCESS,pid))==-1 && errno!=0)
+            perror("cannot get priority");
+        else
+        printf("Priority of process %d is %d\n",pid, prio);
+    } else{
+        pid = (int) strtol(tr[0],NULL,10);
+        value = (int) strtol(tr[1],NULL,10);
+
+        if  ((setpriority(PRIO_PROCESS,pid,value))==-1 && errno!=0)
+            perror("cannot set priority");
+    }
+}
+
+
+void redError(char *file){
+    int fd;
+    fflush(stderr);
+    if ((fd=open(file,O_WRONLY |O_CREAT | O_EXCL, 0644))==-1){
+        perror("");
+        return;
+    }
+
+    dup2(fd,STDERR_FILENO);
+    close(fd);
+    printf("cambiado a %s\n",file);
+}
+
+void redReset(){
+    fflush(stderr);
+    dup2(STDOUT_FILENO,STDERR_FILENO);
+}
+
+void rederrFile(){ //todo: function to print file name of the redirected errors
+
+   // printf("File name: %s\n",stderr);
+
+}
+
+
+void cmd_rederr(char *tr[]){
+
+
+    if  (tr[0]==NULL){
+        rederrFile();
+    } else if (!strcmp(tr[0],"-reset")){
+        redReset();
+    } else{
+        redError(tr[0]);
+    }
+
+
+}
+
+void showEnviron (char **envir, char * envirName)
+{
+    int i=0;
+    while (envir[i]!=NULL) {
+        printf ("%p->%s[%d]=(%p) %s\n", &envir[i],
+                envirName, i,envir[i],envir[i]);
+        i++;
+    }
+}
+
+char ** arg3env=NULL; //todo: temporal quizas
+void cmd_entorno(char *tr[]){
+
+    if (tr[0]==NULL)
+        showEnviron (arg3env, "main arg3");
+    else if (!strcmp(tr[0],"-environ"))
+        showEnviron (environ, "environ");
+    else if (!strcmp(tr[0],"-addr")){
+        printf("environ:\t%p (stored in %p)\n",environ, &environ);
+        printf("main arg3:\t%p (stored in %p)\n",arg3env, &arg3env);
+    }
+
+    else
+        printf("Uso: entorno [-environ|-addr]\n");
+}
+
+int BuscarVariable (char * var, char *e[])
+{
+    int pos=0;
+    char aux[4092];
+    strcpy (aux,var);
+    strcat (aux,"=");
+    while (e[pos]!=NULL)
+        if (!strncmp(e[pos],aux,strlen(aux)))
+            return (pos);
+        else
+            pos++;
+    errno=ENOENT; /*variable doesn't exist*/
+    return(-1);
+}
+
+int changeVariable(char * var, char * value, char *e[])
+{
+    int pos;
+    char *aux;
+    if ((pos=BuscarVariable(var,e))==-1)
+        return(-1);
+    if ((aux=(char *)malloc(strlen(var)+strlen(value)+2))==NULL)
+        return -1;
+    strcpy(aux,var);
+    strcat(aux,"=");
+    strcat(aux,value);
+    e[pos]=aux;
+    return (pos);
+}
+
+void cmd_mostrarvar(char *tr[]){
+
+    char *string;
+    int pos;
+
+    if  (tr[0]==NULL){
+        cmd_entorno(tr);
+        return;
+    }
+
+    /*Con arg3 main*/
+    if ((pos=BuscarVariable(tr[0],arg3env))==-1)
+        return;
+    printf("With arg3 main -> %s(%p) %p\n",arg3env[pos],arg3env[pos], &arg3env[pos]);
+
+    /*Con environ*/
+    if ((pos=BuscarVariable(tr[0],environ))==-1)
+        return;
+    printf("  With environ -> %s(%p) %p\n",environ[pos],environ[pos], environ[pos]); //todo: dos veces el mismo?
+
+    /*Con getenv*/
+    if  ((string=getenv(tr[0]))==NULL)
+        perror("");
+    else
+    printf("   With getenv ->%s(%p)\n",string,string);
+}
+
+
+
+void cmd_cambiarvar(char *tr[]){
+
+    char string[4096]; //todo: echarle un ojo a esta variable
+
+    if (tr[0]==NULL ||tr[1]==NULL ||tr[2]==NULL) {
+        printf("Use: cambiarvar [-a|-e|-p] var value\n");
+        return;
+    }
+
+    sprintf(string,"%s=%s",tr[1],tr[2]);
+
+    if  (!strcmp(tr[0],"-a")){
+        changeVariable(tr[1],tr[2],arg3env);
+    }
+    else if (!strcmp(tr[0],"-e")){
+        changeVariable(tr[1],tr[2],environ);
+    }
+    else if (!strcmp(tr[0],"-p")){
+        if(putenv(string)!=0)
+            perror("");
+    }
+    else
+        printf("Use: cambiarvar [-a|-e|-p] var value\n");
+}
+
+void cmd_uid(char *tr[]){
+
+
+
+}
+
+void cmd_fork(char *tr[]){
+
+
+}
+
+void cmd_ejec(char *tr[]){
+
+
+}
+
+void cmd_ejecpri(char *tr[]){
+
+
+}
+
+void cmd_fg(char *tr[]){
+
+
+}
+
+void cmd_fgpri(char *tr[]){
+
+
+}
+
+void cmd_back(char *tr[]){
+
+
+}
+
+void cmd_backpri(char *tr[]){
+
+
+}
+
+void cmd_ejecas(char *tr[]){
+
+
+}
+
+void cmd_fgas(char *tr[]){
+
+
+}
+
+void cmd_bgas(char *tr[]){
+
+
+}
+
+void cmd_listjobs(char *tr[]){
+
+
+}
+
+void cmd_job(char *tr[]){
+
+
+}
+
+void cmd_borrarjobs(char *tr[]){
+
+
 }
 
 
@@ -1373,10 +1667,11 @@ void ProcesarEntrada(char *tr[]){
 }
 
 
-int main (int argc, char*argv[]) {
+int main (int argc, char*argv[],char *env[]) {
     char linea[MAXLINEA];
     char aux[MAXLINEA];
     char *tr[MAXLINEA / 2];
+    arg3env=env;
 
     createList(&list);
     createMemList(&memlist);
