@@ -1644,37 +1644,122 @@ void cmd_fork(char *tr[]){
 
 }
 
+void ejecAux(char *tr[],bool prio,int prioval) {
+
+    errno=0;
+    if (prio){
+        if  ((setpriority(PRIO_PROCESS,getpid(),prioval))==-1 && errno!=0){
+            perror("cannot set priority");
+            return;
+        }
+    }
+
+    if (execvp(tr[0],tr)==-1)
+        perror ("Cannot execute");
+
+
+}
+
 void cmd_ejec(char *tr[]){
-
-
+    ejecAux(tr,false,0);
 }
 
 void cmd_ejecpri(char *tr[]){
 
+    if(tr[0]==NULL){
+        printf("Use: ejecpri prio prog arg1 arg2...");
+        return;
+    }
+
+    int prio = (int) strtol(tr[0],NULL,10);
+
+    ejecAux(tr+1,true,prio);
 
 }
 
+void fgAux(char *tr[],bool prio,int prioval) {
+
+    pid_t pid;
+
+    if ((pid=fork())==0){
+
+        if (prio){
+            if  ((setpriority(PRIO_PROCESS,getpid(),prioval))==-1 && errno!=0){
+                perror("cannot set priority");
+                exit(0);
+            }
+        }
+        if (execvp(tr[0],tr)==-1)
+            perror ("Cannot execute");
+        exit(255); /*exec has failed for whatever reason*/
+
+    }
+    waitpid (pid,NULL,0);
+    //todo: To check a process state we can use waitpid() with the following flags.
+    //waitpid(pid, &estado, WNOHANG |WUNTRACED |WCONTINUED)
+}
+
+
 void cmd_fg(char *tr[]){
 
+    fgAux(tr,false,0);
 
 }
 
 void cmd_fgpri(char *tr[]){
 
+    if(tr[0]==NULL){
+        printf("Use: fgpri prio prog arg1 arg2...");
+        return;
+    }
+
+    int prio = (int) strtol(tr[0],NULL,10);
+
+    fgAux(tr+1,true,prio);
+}
+
+void backAux(char *tr[],bool prio,int prioval) {
+
+    if (fork()==0){
+
+        if (prio){
+            if  ((setpriority(PRIO_PROCESS,getpid(),prioval))==-1 && errno!=0){
+                perror("cannot set priority");
+                exit(0);
+            }
+        }
+
+        if (execvp(tr[0],tr)==-1)
+            perror ("Cannot execute");
+        exit(255); /*exec has failed for whatever reason*/
+
+    } //todo: añadir proceso a la lista
 
 }
 
 void cmd_back(char *tr[]){
 
+    backAux(tr,false,0);
 
 }
 
 void cmd_backpri(char *tr[]){
 
+    if(tr[0]==NULL){
+        printf("Use: backpri prio prog arg1 arg2...");
+        return;
+    }
+
+    int prio = (int) strtol(tr[0],NULL,10);
+
+    backAux(tr+1,true,prio);
 
 }
 
+
+
 void cmd_ejecas(char *tr[]){
+
 
 
 }
@@ -1682,14 +1767,21 @@ void cmd_ejecas(char *tr[]){
 void cmd_fgas(char *tr[]){
 
 
+
 }
 
 void cmd_bgas(char *tr[]){
 
 
+
 }
 
+
+
+
+
 void cmd_listjobs(char *tr[]){
+
 
 
 }
