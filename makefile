@@ -1,11 +1,14 @@
-shell: p1.o list.o memlist.o
-	gcc p1.o list.o memlist.o -o shell
+shell: p3.o list.o memlist.o proclist.o
+	gcc p3.o list.o memlist.o proclist.o -o shell
 
-p1.o: p1.c list.h
-	gcc -c p1.c
+p3.o: p3.c list.h memlist.h proclist.h 
+	gcc -c p3.c
 
 list.o: list.c list.h
 	gcc -c list.c
 
 memlist.o: memlist.c memlist.h
 	gcc -c memlist.c
+
+proclist.o: proclist.c proclist.h
+	gcc -c proclist.c

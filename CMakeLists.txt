@@ -8,4 +8,4 @@ include_directories(.)
 add_executable(practSO
         list.c
         list.h
-        p1.c memlist.c memlist.h)
+        p3.c memlist.c memlist.h proclist.c proclist.h)

@@ -7,7 +7,11 @@ CMakeFiles/practSO.dir/list.c.o: \
 CMakeFiles/practSO.dir/memlist.c.o: \
  ../memlist.c \
  ../memlist.h
-CMakeFiles/practSO.dir/p1.c.o: \
+CMakeFiles/practSO.dir/p3.c.o: \
  ../list.h \
  ../memlist.h \
- ../p1.c
+ ../p3.c \
+ ../proclist.h
+CMakeFiles/practSO.dir/proclist.c.o: \
+ ../proclist.c \
+ ../proclist.h

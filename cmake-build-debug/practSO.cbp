@@ -90,7 +90,13 @@
 		<Unit filename="/home/guillemo/Documents/SOpract/memlist.h">
 			<Option target="practSO"/>
 		</Unit>
-		<Unit filename="/home/guillemo/Documents/SOpract/p1.c">
+		<Unit filename="/home/guillemo/Documents/SOpract/p3.c">
+			<Option target="practSO"/>
+		</Unit>
+		<Unit filename="/home/guillemo/Documents/SOpract/proclist.c">
+			<Option target="practSO"/>
+		</Unit>
+		<Unit filename="/home/guillemo/Documents/SOpract/proclist.h">
 			<Option target="practSO"/>
 		</Unit>
 		<Unit filename="/home/guillemo/Documents/SOpract/CMakeLists.txt">

@@ -6,24 +6,24 @@
  *
 */
 
-#include "memlist.h"
+#include "proclist.h"
 
 #define LNULL NULL
 
-void createMemList (memList *l){
+void createProcList (procList *l){
 /*creates a list*/
 
     *l = LNULL;
 
 }
 
-bool isEmptyMemList(memList l){
+bool isEmptyProcList(procList l){
 /*checks if the list is empty*/
 
     return (l == LNULL);
 }
 
-memPos memFirst(memList l){
+procPos procFirst(procList l){
 /*returns the first position of the list*/
 
     return l;
@@ -31,31 +31,31 @@ memPos memFirst(memList l){
 }
 
 
-memPos memNext(memPos p, memList l){
+procPos procNext(procPos p, procList l){
 /*returns the node that is on the next position to the one inserted*/
 
     return p->next;
 
 }
 
-bool createMemNode(memPos * p){
+bool createProcNode(procPos * p){
 /*auxiliary op to insertItem*/
 
-    *p = malloc(sizeof(struct tNodeMem));
+    *p = malloc(sizeof(struct tNodeProc));
 
     return *p != LNULL;
 
 }
 
 
-bool insertMemItem(tItemMem d, memList* l){
+bool insertProcItem(tItemProc d, procList* l){
 /*inserts an item into the list*/
 
 
-    memPos n, r;
+    procPos n, r;
 
     /*Exceptional case: no memory*/
-    if ( !createMemNode(&n) )
+    if ( !createProcNode(&n) )
         return false;
     else{
         /* There is enough memory. n = new node*/
@@ -79,10 +79,10 @@ bool insertMemItem(tItemMem d, memList* l){
 }
 
 
-void clearMemList(memList *l){
+void clearProcList(procList *l){
 /*removes every element from the list*/
 
-    memPos p;
+    procPos p;
     while(*l!=NULL){
         p=*l;
         *l = (*l)->next;
@@ -90,16 +90,16 @@ void clearMemList(memList *l){
     }
 }
 
-tItemMem getMemItem(memPos p, memList l){
+tItemProc getProcItem(procPos p, procList l){
 /*returns the item in a position given*/
 
     return p ->data;
 }
 
-void deleteAtMemPosition(memPos p, memList *l){
+void deleteAtProcPosition(procPos p, procList *l){
 /* Deletes a position of the list */
 
-    memPos q;
+    procPos q;
 
     if ( p == *l )
         //delete first element

@@ -6,9 +6,25 @@
 
 #IncludeRegexTransform: 
 
+/home/guillemo/Documents/SOpract/list.c
+list.h
 /home/guillemo/Documents/SOpract/list.h
 stdbool.h
 -
+stdlib.h
+-
+string.h
+-
+stdio.h
+-
+
+/home/guillemo/Documents/SOpract/list.h
+stdbool.h
+-
+
+/home/guillemo/Documents/SOpract/memlist.c
+memlist.h
+/home/guillemo/Documents/SOpract/memlist.h
 
 /home/guillemo/Documents/SOpract/memlist.h
 stdbool.h
@@ -22,7 +38,7 @@ stdio.h
 sys/types.h
 -
 
-/home/guillemo/Documents/SOpract/p1.c
+/home/guillemo/Documents/SOpract/p3.c
 stdio.h
 -
 stdlib.h
@@ -45,8 +61,6 @@ dirent.h
 -
 fcntl.h
 -
-unistd.h
--
 libgen.h
 -
 pwd.h
@@ -57,8 +71,30 @@ grp.h
 -
 sys/shm.h
 -
+sys/wait.h
+-
+sys/resource.h
+-
+signal.h
+-
 list.h
 /home/guillemo/Documents/SOpract/list.h
 memlist.h
 /home/guillemo/Documents/SOpract/memlist.h
+proclist.h
+/home/guillemo/Documents/SOpract/proclist.h
+
+/home/guillemo/Documents/SOpract/proclist.c
+proclist.h
+/home/guillemo/Documents/SOpract/proclist.h
+
+/home/guillemo/Documents/SOpract/proclist.h
+stdbool.h
+-
+stdlib.h
+-
+string.h
+-
+stdio.h
+-
 

@@ -177,29 +177,53 @@ memlist.c.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/practSO.dir/build.make CMakeFiles/practSO.dir/memlist.c.s
 .PHONY : memlist.c.s
 
-p1.o: p1.c.o
-.PHONY : p1.o
+p3.o: p3.c.o
+.PHONY : p3.o
 
 # target to build an object file
-p1.c.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/practSO.dir/build.make CMakeFiles/practSO.dir/p1.c.o
-.PHONY : p1.c.o
+p3.c.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/practSO.dir/build.make CMakeFiles/practSO.dir/p3.c.o
+.PHONY : p3.c.o
 
-p1.i: p1.c.i
-.PHONY : p1.i
+p3.i: p3.c.i
+.PHONY : p3.i
 
 # target to preprocess a source file
-p1.c.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/practSO.dir/build.make CMakeFiles/practSO.dir/p1.c.i
-.PHONY : p1.c.i
+p3.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/practSO.dir/build.make CMakeFiles/practSO.dir/p3.c.i
+.PHONY : p3.c.i
 
-p1.s: p1.c.s
-.PHONY : p1.s
+p3.s: p3.c.s
+.PHONY : p3.s
 
 # target to generate assembly for a file
-p1.c.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/practSO.dir/build.make CMakeFiles/practSO.dir/p1.c.s
-.PHONY : p1.c.s
+p3.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/practSO.dir/build.make CMakeFiles/practSO.dir/p3.c.s
+.PHONY : p3.c.s
+
+proclist.o: proclist.c.o
+.PHONY : proclist.o
+
+# target to build an object file
+proclist.c.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/practSO.dir/build.make CMakeFiles/practSO.dir/proclist.c.o
+.PHONY : proclist.c.o
+
+proclist.i: proclist.c.i
+.PHONY : proclist.i
+
+# target to preprocess a source file
+proclist.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/practSO.dir/build.make CMakeFiles/practSO.dir/proclist.c.i
+.PHONY : proclist.c.i
+
+proclist.s: proclist.c.s
+.PHONY : proclist.s
+
+# target to generate assembly for a file
+proclist.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/practSO.dir/build.make CMakeFiles/practSO.dir/proclist.c.s
+.PHONY : proclist.c.s
 
 # Help Target
 help:
@@ -216,9 +240,12 @@ help:
 	@echo "... memlist.o"
 	@echo "... memlist.i"
 	@echo "... memlist.s"
-	@echo "... p1.o"
-	@echo "... p1.i"
-	@echo "... p1.s"
+	@echo "... p3.o"
+	@echo "... p3.i"
+	@echo "... p3.s"
+	@echo "... proclist.o"
+	@echo "... proclist.i"
+	@echo "... proclist.s"
 .PHONY : help
 
 
