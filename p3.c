@@ -43,11 +43,14 @@
 extern char **environ;
 
 /*GLOBAL VARIABLES*/
-tList list;
 bool iscmd;
+
+tList list;
 memList memlist;
 procList proclist;
 
+char stderrorFile[4096]="configuracion original";
+char ** arg3env=NULL;
 
 /*global variables for memoria command*/
 int g1=1,g2=2,g3=3;
@@ -566,6 +569,10 @@ void printTimeFormat(time_t t, int i){
         printf("%04d/%02d/%02d-%02d:%02d ",tm.tm_year+1900,tm.tm_mon+1, tm.tm_mday,  tm.tm_hour, tm.tm_min);
     } else if (i==2){
         printf("%s", ctime(&t));
+    } else if (i==3){
+        char *t2 = ctime(&t);
+        if (t2[strlen(t2)-1] == '\n') t2[strlen(t2)-1] = '\0';
+        printf("%s", t2);
     }
 }
 
@@ -1470,7 +1477,7 @@ void cmd_e_s(char *tr[]){
         e_s_read(tr+1);
 }
 
-/*P3 FUNCTIONS*/
+/*todo: P3 FUNCTIONS*/
 
 void cmd_priority(char *tr[]){
 
@@ -1501,15 +1508,16 @@ void cmd_priority(char *tr[]){
 
 void redError(char *file){
     int fd;
-    fflush(stderr);
+
+    sprintf(stderrorFile,"%s",file);
 
     if ((fd=open(file,O_WRONLY |O_CREAT | O_EXCL, 0644))==-1){
-        perror("");
+        perror("Cannot redirect error");
         return;
     }
     if (dup2(fd,STDERR_FILENO)==-1){
-        close(fd);
         perror("");
+        close(fd);
         return;
     }
 
@@ -1518,35 +1526,21 @@ void redError(char *file){
 }
 
 void redReset(){
-    fflush(stderr);
+
+    sprintf(stderrorFile,"configuracion original");
+
     dup2(STDOUT_FILENO,STDERR_FILENO);
-}
-
-void rederrFile(){ //todo: doesnt always work, mirar de hacer variable global o algo
-
-    char path[4096]="",linkName[4096]="";
-    sprintf(path, "/proc/self/fd/%d",STDERR_FILENO);
-
-    if(readlink(path, linkName, sizeof(linkName)-1)==-1){
-        perror("");
-    } else {
-        if (!strcmp(linkName, "/dev/pts/0"))
-            printf("standard error in original configuration file\n");
-        else printf("%s\n", linkName);
-    }
 }
 
 void cmd_rederr(char *tr[]){
 
-
     if  (tr[0]==NULL){
-        rederrFile();
+        printf("error estandar en fichero %s\n",stderrorFile);
     } else if (!strcmp(tr[0],"-reset")){
         redReset();
     } else{
         redError(tr[0]);
     }
-
 
 }
 
@@ -1560,7 +1554,7 @@ void showEnviron (char **envir, char * envirName)
     }
 }
 
-char ** arg3env=NULL; //todo: temporal quizas
+
 void cmd_entorno(char *tr[]){
 
     if (tr[0]==NULL)
@@ -1637,7 +1631,7 @@ void cmd_mostrarvar(char *tr[]){
 
 void cmd_cambiarvar(char *tr[]){
 
-    char string[4096]; //todo: echarle un ojo a esta variable
+    char string[4096];
 
     if (tr[0]==NULL ||tr[1]==NULL ||tr[2]==NULL) {
         printf("Use: cambiarvar [-a|-e|-p] var value\n");
@@ -1647,14 +1641,16 @@ void cmd_cambiarvar(char *tr[]){
     sprintf(string,"%s=%s",tr[1],tr[2]);
 
     if  (!strcmp(tr[0],"-a")){
-        changeVariable(tr[1],tr[2],arg3env);
+        if (changeVariable(tr[1],tr[2],arg3env)==-1)
+            perror("Cannot change variable");
     }
     else if (!strcmp(tr[0],"-e")){
-        changeVariable(tr[1],tr[2],environ);
+        if (changeVariable(tr[1],tr[2],environ)==-1)
+            perror("Cannot change variable");
     }
     else if (!strcmp(tr[0],"-p")){
         if(putenv(string)!=0)
-            perror("");
+            perror("Cannot change variable");
     }
     else
         printf("Use: cambiarvar [-a|-e|-p] var value\n");
@@ -1662,8 +1658,7 @@ void cmd_cambiarvar(char *tr[]){
 
 
 
-uid_t userUid (char * nombre)
-{
+uid_t userUid (char * nombre){
     struct passwd *p;
     if ((p=getpwnam (nombre))==NULL)
         return (uid_t) -1;
@@ -1678,11 +1673,22 @@ char * username (uid_t uid)
     return p->pw_name;
 }
 
-void processUid (){
-
+void MostrarUidsProceso (void)
+{
     uid_t real=getuid(), efec=geteuid();
-    printf ("Credencial real: %d, (%s)\n", real, username (real));
+    printf ("Credencial real: %d, (%s)\n", real, username(real));
     printf ("Credencial efectiva: %d, (%s)\n", efec, username (efec));
+}
+
+void CambiarUidLogin (char * login)
+{
+    uid_t uid;
+    if ((uid=userUid(login))==(uid_t) -1){
+        printf("loin no valido: %s\n", login);
+        return;
+    }
+    if (setuid(uid)==.1)
+        printf ("Imposible cambiar credencial: %s\n", strerror(errno));
 }
 
 void cmd_uid(char *tr[]){ //todo: comprobar funcion
@@ -1697,18 +1703,15 @@ void cmd_uid(char *tr[]){ //todo: comprobar funcion
         }
 
         if (!strcmp(tr[1],"-l") && tr[2]!=NULL){
-            if ((id=userUid(tr[2]))== (uid_t) -1){
-                printf("login %s not valid\n", tr[2]);
-                return;
-            }
-        } else
+            CambiarUidLogin(tr[2]);
+        } else{
             id = strtol(tr[1],NULL,10);
-
-        if (setuid(id)==-1)
-            perror("Unable to change credential");
+            if (setuid(id)==-1)
+                perror("Unable to change credential");
+        }
 
     } else{
-         processUid();
+         MostrarUidsProceso();
     }
 
 }
@@ -1776,8 +1779,6 @@ void fgAux(char *tr[],bool prio,int prioval) {
 
     }
     waitpid (pid,NULL,0);
-    //todo: To check a process state we can use waitpid() with the following flags.
-    //waitpid(pid, &estado, WNOHANG |WUNTRACED |WCONTINUED)
 }
 
 
@@ -1800,8 +1801,10 @@ void cmd_fgpri(char *tr[]){
 }
 
 void backAux(char *tr[],bool prio,int prioval) {
+    tItemProc item;
+    int pid=-1;
 
-    if (fork()==0){
+    if ((pid=fork())==0){
 
         if (prio){
             if  ((setpriority(PRIO_PROCESS,getpid(),prioval))==-1 && errno!=0){
@@ -1814,7 +1817,24 @@ void backAux(char *tr[],bool prio,int prioval) {
             perror ("Cannot execute");
         exit(255); /*exec has failed for whatever reason*/
 
-    } //todo: añadir proceso a la lista
+    } else{
+
+        //printf("pid: %d --- %d",getpid(), pid);
+        item.pid=pid;
+
+        item.exectime= time(NULL);
+
+        sprintf(item.name,"%s",tr[0]);
+        if (tr[0]!=NULL){
+            for (int i = 1; tr[i]!=NULL; i++) {
+                strcat(item.name," ");
+                strcat(item.name,tr[i]);
+            }
+        }
+
+        insertProcItem(item,&proclist);
+    }
+
 
 }
 
@@ -1863,11 +1883,26 @@ void cmd_bgas(char *tr[]){
 
 void cmd_listjobs(char *tr[]){
 
+    procPos pos;
+    tItemProc item;
 
+    if (isEmptyProcList(proclist)) return;
 
+    pos = procFirst(proclist);
+    while (pos!=NULL){
+
+        item = getProcItem(pos,proclist);
+
+        printf("%6d%12s p=%d ", item.pid, username(item.user), getpriority(PRIO_PROCESS,item.pid));
+        printTimeFormat(item.exectime,3);
+        printf(" %s\n",item.name);
+
+        pos = procNext(pos,proclist);
+    }
 }
 
 void cmd_job(char *tr[]){
+
 
 
 }
@@ -1875,6 +1910,19 @@ void cmd_job(char *tr[]){
 void cmd_borrarjobs(char *tr[]){
 
 
+}
+
+
+void executecommand(char *tr[]){
+
+    int i;
+    for (i = 0; tr[i+1]!=NULL ; i++);
+
+    if(!strcmp(tr[i],"&")){
+        tr[i]=NULL;
+        backAux(tr,false,0);
+    }else
+        fgAux(tr,false,0);
 }
 
 
@@ -1903,7 +1951,7 @@ void ProcesarEntrada(char *tr[]){
             found=true;
         }
     }
-    if(!found) printf("command not found\n");
+    if(!found) executecommand(tr);
 }
 
 

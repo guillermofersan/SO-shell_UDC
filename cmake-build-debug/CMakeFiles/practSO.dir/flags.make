@@ -4,7 +4,7 @@
 # compile C with /usr/bin/cc
 C_DEFINES = 
 
-C_INCLUDES = -I/home/guillemo/Documents/SOpract/.
+C_INCLUDES = -I/home/guillermo/SOp3/.
 
 C_FLAGS = -g -std=gnu11
 

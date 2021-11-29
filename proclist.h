@@ -9,17 +9,17 @@
 #ifndef PRACTSO_PROCLIST_H
 #define PRACTSO_PROCLIST_H
 
-
-
-
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
 
-
-
 typedef struct tItemProc {
+    pid_t pid;
+    uid_t user;
+    int state, termValue; //state: 1-RUNNING 2-STOPPED, 3-TERMINATED, 4-TERMINATEDSIGNAL
+    time_t exectime;
+    char name[1024];
 
 } tItemProc;
 
@@ -42,4 +42,4 @@ void clearProcList(procList *);
 void deleteAtProcPosition(procPos, procList *);
 
 
-#endif //PRACTSO_PROCLIST_H
+#endif

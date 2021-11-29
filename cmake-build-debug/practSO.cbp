@@ -8,98 +8,98 @@
 		<Option virtualFolders="CMake Files\;"/>
 		<Build>
 			<Target title="all">
-				<Option working_dir="/home/guillemo/Documents/SOpract/cmake-build-debug"/>
+				<Option working_dir="/home/guillermo/SOp3/cmake-build-debug"/>
 				<Option type="4"/>
 				<MakeCommands>
-					<Build command="/usr/bin/make -j8 -f &quot;/home/guillemo/Documents/SOpract/cmake-build-debug/Makefile&quot;  VERBOSE=1 all"/>
-					<CompileFile command="/usr/bin/make -j8 -f &quot;/home/guillemo/Documents/SOpract/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
-					<Clean command="/usr/bin/make -j8 -f &quot;/home/guillemo/Documents/SOpract/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
-					<DistClean command="/usr/bin/make -j8 -f &quot;/home/guillemo/Documents/SOpract/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<Build command="/usr/bin/make -j12 -f &quot;/home/guillermo/SOp3/cmake-build-debug/Makefile&quot;  VERBOSE=1 all"/>
+					<CompileFile command="/usr/bin/make -j12 -f &quot;/home/guillermo/SOp3/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j12 -f &quot;/home/guillermo/SOp3/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j12 -f &quot;/home/guillermo/SOp3/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
 				</MakeCommands>
 			</Target>
 			<Target title="rebuild_cache">
-				<Option working_dir="/home/guillemo/Documents/SOpract/cmake-build-debug"/>
+				<Option working_dir="/home/guillermo/SOp3/cmake-build-debug"/>
 				<Option type="4"/>
 				<MakeCommands>
-					<Build command="/usr/bin/make -j8 -f &quot;/home/guillemo/Documents/SOpract/cmake-build-debug/Makefile&quot;  VERBOSE=1 rebuild_cache"/>
-					<CompileFile command="/usr/bin/make -j8 -f &quot;/home/guillemo/Documents/SOpract/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
-					<Clean command="/usr/bin/make -j8 -f &quot;/home/guillemo/Documents/SOpract/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
-					<DistClean command="/usr/bin/make -j8 -f &quot;/home/guillemo/Documents/SOpract/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<Build command="/usr/bin/make -j12 -f &quot;/home/guillermo/SOp3/cmake-build-debug/Makefile&quot;  VERBOSE=1 rebuild_cache"/>
+					<CompileFile command="/usr/bin/make -j12 -f &quot;/home/guillermo/SOp3/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j12 -f &quot;/home/guillermo/SOp3/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j12 -f &quot;/home/guillermo/SOp3/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
 				</MakeCommands>
 			</Target>
 			<Target title="edit_cache">
-				<Option working_dir="/home/guillemo/Documents/SOpract/cmake-build-debug"/>
+				<Option working_dir="/home/guillermo/SOp3/cmake-build-debug"/>
 				<Option type="4"/>
 				<MakeCommands>
-					<Build command="/usr/bin/make -j8 -f &quot;/home/guillemo/Documents/SOpract/cmake-build-debug/Makefile&quot;  VERBOSE=1 edit_cache"/>
-					<CompileFile command="/usr/bin/make -j8 -f &quot;/home/guillemo/Documents/SOpract/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
-					<Clean command="/usr/bin/make -j8 -f &quot;/home/guillemo/Documents/SOpract/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
-					<DistClean command="/usr/bin/make -j8 -f &quot;/home/guillemo/Documents/SOpract/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<Build command="/usr/bin/make -j12 -f &quot;/home/guillermo/SOp3/cmake-build-debug/Makefile&quot;  VERBOSE=1 edit_cache"/>
+					<CompileFile command="/usr/bin/make -j12 -f &quot;/home/guillermo/SOp3/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j12 -f &quot;/home/guillermo/SOp3/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j12 -f &quot;/home/guillermo/SOp3/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
 				</MakeCommands>
 			</Target>
 			<Target title="practSO">
-				<Option output="/home/guillemo/Documents/SOpract/cmake-build-debug/practSO" prefix_auto="0" extension_auto="0"/>
-				<Option working_dir="/home/guillemo/Documents/SOpract/cmake-build-debug"/>
+				<Option output="/home/guillermo/SOp3/cmake-build-debug/practSO" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/guillermo/SOp3/cmake-build-debug"/>
 				<Option object_output="./"/>
 				<Option type="1"/>
 				<Option compiler="gcc"/>
 				<Compiler>
-					<Add directory="/home/guillemo/Documents/SOpract/."/>
+					<Add directory="/home/guillermo/SOp3/."/>
 					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/9/include"/>
 					<Add directory="/usr/local/include"/>
 					<Add directory="/usr/include/x86_64-linux-gnu"/>
 					<Add directory="/usr/include"/>
 				</Compiler>
 				<MakeCommands>
-					<Build command="/usr/bin/make -j8 -f &quot;/home/guillemo/Documents/SOpract/cmake-build-debug/Makefile&quot;  VERBOSE=1 practSO"/>
-					<CompileFile command="/usr/bin/make -j8 -f &quot;/home/guillemo/Documents/SOpract/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
-					<Clean command="/usr/bin/make -j8 -f &quot;/home/guillemo/Documents/SOpract/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
-					<DistClean command="/usr/bin/make -j8 -f &quot;/home/guillemo/Documents/SOpract/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<Build command="/usr/bin/make -j12 -f &quot;/home/guillermo/SOp3/cmake-build-debug/Makefile&quot;  VERBOSE=1 practSO"/>
+					<CompileFile command="/usr/bin/make -j12 -f &quot;/home/guillermo/SOp3/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j12 -f &quot;/home/guillermo/SOp3/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j12 -f &quot;/home/guillermo/SOp3/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
 				</MakeCommands>
 			</Target>
 			<Target title="practSO/fast">
-				<Option output="/home/guillemo/Documents/SOpract/cmake-build-debug/practSO" prefix_auto="0" extension_auto="0"/>
-				<Option working_dir="/home/guillemo/Documents/SOpract/cmake-build-debug"/>
+				<Option output="/home/guillermo/SOp3/cmake-build-debug/practSO" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/guillermo/SOp3/cmake-build-debug"/>
 				<Option object_output="./"/>
 				<Option type="1"/>
 				<Option compiler="gcc"/>
 				<Compiler>
-					<Add directory="/home/guillemo/Documents/SOpract/."/>
+					<Add directory="/home/guillermo/SOp3/."/>
 					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/9/include"/>
 					<Add directory="/usr/local/include"/>
 					<Add directory="/usr/include/x86_64-linux-gnu"/>
 					<Add directory="/usr/include"/>
 				</Compiler>
 				<MakeCommands>
-					<Build command="/usr/bin/make -j8 -f &quot;/home/guillemo/Documents/SOpract/cmake-build-debug/Makefile&quot;  VERBOSE=1 practSO/fast"/>
-					<CompileFile command="/usr/bin/make -j8 -f &quot;/home/guillemo/Documents/SOpract/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
-					<Clean command="/usr/bin/make -j8 -f &quot;/home/guillemo/Documents/SOpract/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
-					<DistClean command="/usr/bin/make -j8 -f &quot;/home/guillemo/Documents/SOpract/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<Build command="/usr/bin/make -j12 -f &quot;/home/guillermo/SOp3/cmake-build-debug/Makefile&quot;  VERBOSE=1 practSO/fast"/>
+					<CompileFile command="/usr/bin/make -j12 -f &quot;/home/guillermo/SOp3/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j12 -f &quot;/home/guillermo/SOp3/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j12 -f &quot;/home/guillermo/SOp3/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
 				</MakeCommands>
 			</Target>
 		</Build>
-		<Unit filename="/home/guillemo/Documents/SOpract/list.c">
+		<Unit filename="/home/guillermo/SOp3/list.c">
 			<Option target="practSO"/>
 		</Unit>
-		<Unit filename="/home/guillemo/Documents/SOpract/list.h">
+		<Unit filename="/home/guillermo/SOp3/list.h">
 			<Option target="practSO"/>
 		</Unit>
-		<Unit filename="/home/guillemo/Documents/SOpract/memlist.c">
+		<Unit filename="/home/guillermo/SOp3/memlist.c">
 			<Option target="practSO"/>
 		</Unit>
-		<Unit filename="/home/guillemo/Documents/SOpract/memlist.h">
+		<Unit filename="/home/guillermo/SOp3/memlist.h">
 			<Option target="practSO"/>
 		</Unit>
-		<Unit filename="/home/guillemo/Documents/SOpract/p3.c">
+		<Unit filename="/home/guillermo/SOp3/p3.c">
 			<Option target="practSO"/>
 		</Unit>
-		<Unit filename="/home/guillemo/Documents/SOpract/proclist.c">
+		<Unit filename="/home/guillermo/SOp3/proclist.c">
 			<Option target="practSO"/>
 		</Unit>
-		<Unit filename="/home/guillemo/Documents/SOpract/proclist.h">
+		<Unit filename="/home/guillermo/SOp3/proclist.h">
 			<Option target="practSO"/>
 		</Unit>
-		<Unit filename="/home/guillemo/Documents/SOpract/CMakeLists.txt">
+		<Unit filename="/home/guillermo/SOp3/CMakeLists.txt">
 			<Option virtualFolder="CMake Files\"/>
 		</Unit>
 	</Project>

@@ -44,19 +44,19 @@ cmake_force:
 SHELL = /bin/sh
 
 # The CMake executable.
-CMAKE_COMMAND = /home/guillemo/Documents/CLion-2021.2.2/clion-2021.2.2/bin/cmake/linux/bin/cmake
+CMAKE_COMMAND = /home/guillermo/Documentos/clion-2021.2.2/bin/cmake/linux/bin/cmake
 
 # The command to remove a file.
-RM = /home/guillemo/Documents/CLion-2021.2.2/clion-2021.2.2/bin/cmake/linux/bin/cmake -E rm -f
+RM = /home/guillermo/Documentos/clion-2021.2.2/bin/cmake/linux/bin/cmake -E rm -f
 
 # Escaping for special characters.
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/guillemo/Documents/SOpract
+CMAKE_SOURCE_DIR = /home/guillermo/SOp3
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/guillemo/Documents/SOpract/cmake-build-debug
+CMAKE_BINARY_DIR = /home/guillermo/SOp3/cmake-build-debug
 
 # Include any dependencies generated for this target.
 include CMakeFiles/practSO.dir/depend.make
@@ -68,55 +68,55 @@ include CMakeFiles/practSO.dir/flags.make
 
 CMakeFiles/practSO.dir/list.c.o: CMakeFiles/practSO.dir/flags.make
 CMakeFiles/practSO.dir/list.c.o: ../list.c
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/guillemo/Documents/SOpract/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building C object CMakeFiles/practSO.dir/list.c.o"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/practSO.dir/list.c.o -c /home/guillemo/Documents/SOpract/list.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/guillermo/SOp3/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building C object CMakeFiles/practSO.dir/list.c.o"
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/practSO.dir/list.c.o -c /home/guillermo/SOp3/list.c
 
 CMakeFiles/practSO.dir/list.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/practSO.dir/list.c.i"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/guillemo/Documents/SOpract/list.c > CMakeFiles/practSO.dir/list.c.i
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/guillermo/SOp3/list.c > CMakeFiles/practSO.dir/list.c.i
 
 CMakeFiles/practSO.dir/list.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/practSO.dir/list.c.s"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/guillemo/Documents/SOpract/list.c -o CMakeFiles/practSO.dir/list.c.s
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/guillermo/SOp3/list.c -o CMakeFiles/practSO.dir/list.c.s
 
 CMakeFiles/practSO.dir/p3.c.o: CMakeFiles/practSO.dir/flags.make
 CMakeFiles/practSO.dir/p3.c.o: ../p3.c
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/guillemo/Documents/SOpract/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building C object CMakeFiles/practSO.dir/p3.c.o"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/practSO.dir/p3.c.o -c /home/guillemo/Documents/SOpract/p3.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/guillermo/SOp3/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building C object CMakeFiles/practSO.dir/p3.c.o"
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/practSO.dir/p3.c.o -c /home/guillermo/SOp3/p3.c
 
 CMakeFiles/practSO.dir/p3.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/practSO.dir/p3.c.i"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/guillemo/Documents/SOpract/p3.c > CMakeFiles/practSO.dir/p3.c.i
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/guillermo/SOp3/p3.c > CMakeFiles/practSO.dir/p3.c.i
 
 CMakeFiles/practSO.dir/p3.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/practSO.dir/p3.c.s"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/guillemo/Documents/SOpract/p3.c -o CMakeFiles/practSO.dir/p3.c.s
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/guillermo/SOp3/p3.c -o CMakeFiles/practSO.dir/p3.c.s
 
 CMakeFiles/practSO.dir/memlist.c.o: CMakeFiles/practSO.dir/flags.make
 CMakeFiles/practSO.dir/memlist.c.o: ../memlist.c
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/guillemo/Documents/SOpract/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building C object CMakeFiles/practSO.dir/memlist.c.o"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/practSO.dir/memlist.c.o -c /home/guillemo/Documents/SOpract/memlist.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/guillermo/SOp3/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building C object CMakeFiles/practSO.dir/memlist.c.o"
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/practSO.dir/memlist.c.o -c /home/guillermo/SOp3/memlist.c
 
 CMakeFiles/practSO.dir/memlist.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/practSO.dir/memlist.c.i"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/guillemo/Documents/SOpract/memlist.c > CMakeFiles/practSO.dir/memlist.c.i
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/guillermo/SOp3/memlist.c > CMakeFiles/practSO.dir/memlist.c.i
 
 CMakeFiles/practSO.dir/memlist.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/practSO.dir/memlist.c.s"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/guillemo/Documents/SOpract/memlist.c -o CMakeFiles/practSO.dir/memlist.c.s
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/guillermo/SOp3/memlist.c -o CMakeFiles/practSO.dir/memlist.c.s
 
 CMakeFiles/practSO.dir/proclist.c.o: CMakeFiles/practSO.dir/flags.make
 CMakeFiles/practSO.dir/proclist.c.o: ../proclist.c
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/guillemo/Documents/SOpract/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building C object CMakeFiles/practSO.dir/proclist.c.o"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/practSO.dir/proclist.c.o -c /home/guillemo/Documents/SOpract/proclist.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/guillermo/SOp3/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building C object CMakeFiles/practSO.dir/proclist.c.o"
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/practSO.dir/proclist.c.o -c /home/guillermo/SOp3/proclist.c
 
 CMakeFiles/practSO.dir/proclist.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/practSO.dir/proclist.c.i"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/guillemo/Documents/SOpract/proclist.c > CMakeFiles/practSO.dir/proclist.c.i
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/guillermo/SOp3/proclist.c > CMakeFiles/practSO.dir/proclist.c.i
 
 CMakeFiles/practSO.dir/proclist.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/practSO.dir/proclist.c.s"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/guillemo/Documents/SOpract/proclist.c -o CMakeFiles/practSO.dir/proclist.c.s
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/guillermo/SOp3/proclist.c -o CMakeFiles/practSO.dir/proclist.c.s
 
 # Object files for target practSO
 practSO_OBJECTS = \
@@ -134,7 +134,7 @@ practSO: CMakeFiles/practSO.dir/memlist.c.o
 practSO: CMakeFiles/practSO.dir/proclist.c.o
 practSO: CMakeFiles/practSO.dir/build.make
 practSO: CMakeFiles/practSO.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/guillemo/Documents/SOpract/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Linking C executable practSO"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/guillermo/SOp3/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Linking C executable practSO"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/practSO.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.
@@ -146,6 +146,6 @@ CMakeFiles/practSO.dir/clean:
 .PHONY : CMakeFiles/practSO.dir/clean
 
 CMakeFiles/practSO.dir/depend:
-	cd /home/guillemo/Documents/SOpract/cmake-build-debug && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/guillemo/Documents/SOpract /home/guillemo/Documents/SOpract /home/guillemo/Documents/SOpract/cmake-build-debug /home/guillemo/Documents/SOpract/cmake-build-debug /home/guillemo/Documents/SOpract/cmake-build-debug/CMakeFiles/practSO.dir/DependInfo.cmake --color=$(COLOR)
+	cd /home/guillermo/SOp3/cmake-build-debug && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/guillermo/SOp3 /home/guillermo/SOp3 /home/guillermo/SOp3/cmake-build-debug /home/guillermo/SOp3/cmake-build-debug /home/guillermo/SOp3/cmake-build-debug/CMakeFiles/practSO.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : CMakeFiles/practSO.dir/depend
 

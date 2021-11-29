@@ -55,4 +55,4 @@ void clearMemList(memList *);
 void deleteAtMemPosition(memPos, memList *);
 
 
-#endif //SOPRACT_MEMLIST_H
+#endif
