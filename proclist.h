@@ -17,9 +17,10 @@
 typedef struct tItemProc {
     pid_t pid;
     uid_t user;
-    int state, termValue; //state: 1-RUNNING 2-STOPPED, 3-TERMINATED, 4-TERMINATEDSIGNAL
+    int signal; //state: 1-RUNNING 2-STOPPED, 3-TERMINATED, 4-TERMINATEDSIGNAL
     time_t exectime;
     char name[1024];
+    char state[16];
 
 } tItemProc;
 
@@ -40,6 +41,7 @@ tItemProc getProcItem(procPos, procList);
 bool isEmptyProcList(procList);
 void clearProcList(procList *);
 void deleteAtProcPosition(procPos, procList *);
+void updateItem(tItemProc, procPos, procList*);
 
 
 #endif

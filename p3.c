@@ -306,7 +306,12 @@ void cmd_infosis() {
 
 void cmd_ayuda(char *tr[]){
 /*prints help for different commands*/
-    if(tr[0]==NULL) printf("Avaiable commands:\n-> autores\n-> ayuda\n-> borrar\n-> borrarrec\n-> bye\n-> carpeta\n-> comando\n-> crear\n-> dealloc\n-> e-s\n-> fecha\n-> fin\n-> hist\n-> infosis\n-> listdir\n-> listfich\n-> llenarmem\n-> malloc\n-> memoria\n-> mmap\n-> pid\n-> recursiva\n-> salir\n-> shared\n-> volcarmem\n");
+    if(tr[0]==NULL) printf("Avaiable commands:\n-> autores\n-> ayuda\n-> back\n-> bgas\n-> backpri\n-> borrar\n"
+                           "-> borrarrec\n-> borrarjobs\n-> bye\n-> cambiarvar\n-> carpeta\n-> comando\n-> crear\n-"
+                           "> dealloc\n-> ejec\n-> ejecas\n-> ejecpri\n-> entorno\n-> e-s\n-> fecha\n-> fg\n-> fgas\n"
+                           "-> fgpri\n-> fin\n-> fork\n-> hist\n-> infosis\n-> job\n-> listdir\n-> listfich\n-> listjobs\n"
+                           "-> llenarmem\n-> malloc\n-> memoria\n-> mmap\n-> mostrarvar\n-> pid\n-> priority\n"
+                           "-> recursiva\n-> rederr\n-> salir\n-> shared\n-> uid\n-> volcarmem");
     else if(!strcmp(tr[0],"autores")) printf("autores [-l|-n]: Prints the names and logins of the program authors.\n");
     else if(!strcmp(tr[0],"pid")) printf("pid [-p]: Prints the pid of the process or parent process of the shell.\n");
     else if(!strcmp(tr[0],"carpeta")) printf("carpeta [dir]: Changes (or shows) the current working directory of the shell to direct.\n");
@@ -335,6 +340,25 @@ void cmd_ayuda(char *tr[]){
         printf("      read fich addr cont: reads cont bytes from file fich into memory address addr\n");
         printf("write [-o] fich addr cont: writes cont bytes frommemory address addr into file fich\n");
     }
+    else if(!strcmp(tr[0],"priority")) printf("priority [pid] [value]: shows or changes the priority of pid to value\n");
+    else if(!strcmp(tr[0],"rederr")) printf("rederr [-reset] fich: redirects standard error of the shell\n");
+    else if(!strcmp(tr[0],"entorno")) printf("entorno [-environ|-addr]: shows the process environment\n");
+    else if(!strcmp(tr[0],"mostrarvar")) printf("mostrarvar VAR: shows the value and addresses of environment variable VAR\n");
+    else if(!strcmp(tr[0],"cambiarvar")) printf("cambiarvar [-a|-e|-p] var value: changes the value of an environment variable\n");
+    else if(!strcmp(tr[0],"uid")) printf("uid [-get|-set] [-l] [id]: shows or changes (if possible) the credential of the process executing the shell\n");
+    else if(!strcmp(tr[0],"fork")) printf("fork: a call to fork to create a process\n");
+    else if(!strcmp(tr[0],"ejec")) printf("ejec prog args...: executes without creating a process the program prog with arguments arg\n");
+    else if(!strcmp(tr[0],"ejecpri")) printf("ejecpri prio prog args...: executes without creating a process the program prog with arguments arg with priority prio\n");
+    else if(!strcmp(tr[0],"ejecas")) printf("ejecas us prog args...: executes without creating a process and as user us the program prog with arguments arg\n");
+    else if(!strcmp(tr[0],"fg")) printf("fg prog args...: creates a process that executes in the foreground the program prog with arguments arg\n");
+    else if(!strcmp(tr[0],"fgpri")) printf("fgpri prio prog args...: creates a process that executes in the foreground the program prog with arguments arg with priority prio\n");
+    else if(!strcmp(tr[0],"fgas")) printf("fgas us prog args...: creates a process that executes in the foreground the program prog as user us with arguments arg\n");
+    else if(!strcmp(tr[0],"back")) printf("back prog args: creates a process that executes in the back the program prog with arguments arg\n");
+    else if(!strcmp(tr[0],"backpri")) printf("backpri prio prog args: creates a process that executes in the back the program prog with arguments arg with priority prio\n");
+    else if(!strcmp(tr[0],"bgas")) printf("bgas us prog args: creates a process that executes in the back the program prog as user us with arguments arg\n");
+    else if(!strcmp(tr[0],"listjobs")) printf("listjobs: lists the processes in the back\n");
+    else if(!strcmp(tr[0],"job")) printf("job [-fg] pid: shows information on process pid. -fg brings it to the foreground\n");
+    else if(!strcmp(tr[0],"borrarjobs")) printf("borrarjobs [-term|-sig|-all|-clear]: deletes the processes terminated or terminated by signal from the process list\n");
     else printf("%s is not a command\n",tr[0]);
 }
 
@@ -358,7 +382,7 @@ void cmd_hist(char *tr[]){
         int i=1, n;
         if(tr[0]==NULL){
             n=-MAXLINEA;
-        } else n= strtol(tr[0], NULL, 10);
+        } else n= (int) strtol(tr[0], NULL, 10);
 
         if(!isEmptyList(list) && n<0){
 
@@ -377,7 +401,7 @@ void cmd_hist(char *tr[]){
 void cmd_comando(char *nchar[]){
 /*Repeats the command indicated*/
 
-    int i, N = strtol(nchar[0], NULL, 10);
+    int i, N = (int) strtol(nchar[0], NULL, 10);
     if((N==0) | isEmptyList(list)){
         printf("command number not valid\n");
     } else{
@@ -570,9 +594,7 @@ void printTimeFormat(time_t t, int i){
     } else if (i==2){
         printf("%s", ctime(&t));
     } else if (i==3){
-        char *t2 = ctime(&t);
-        if (t2[strlen(t2)-1] == '\n') t2[strlen(t2)-1] = '\0';
-        printf("%s", t2);
+        printf("%04d/%02d/%02d %02d:%02d:%02d ",tm.tm_year+1900,tm.tm_mon+1, tm.tm_mday,  tm.tm_hour, tm.tm_min, tm.tm_sec);
     }
 }
 
@@ -1020,7 +1042,7 @@ void * ObtainMemShmget (key_t key, size_t size){
 }
 
 
-void SharedCreate (char *tr[]){
+void SharedCreate (char *tr[]){ //todo: cambiar atoi por strtol
 /*Function to create/get a shared memory address*/
     key_t k;
     size_t tam;
@@ -1287,7 +1309,7 @@ void volcarmemaux(void *addr, int cont){
 
 
 
-void cmd_volcarmem(char *tr[]){
+void cmd_volcarmem(char *tr[]){ //todo: atoi
 /*Shows the contents of cont bytes starting at memory address addr*/
 
     int cont=25;
@@ -1477,7 +1499,7 @@ void cmd_e_s(char *tr[]){
         e_s_read(tr+1);
 }
 
-/*todo: P3 FUNCTIONS*/
+/* P3 FUNCTIONS */
 
 void cmd_priority(char *tr[]){
 
@@ -1638,7 +1660,7 @@ void cmd_cambiarvar(char *tr[]){
         return;
     }
 
-    sprintf(string,"%s=%s",tr[1],tr[2]);
+    sprintf(string,"%s=%s",tr[1],tr[2]); //todo:revisar formato
 
     if  (!strcmp(tr[0],"-a")){
         if (changeVariable(tr[1],tr[2],arg3env)==-1)
@@ -1669,7 +1691,7 @@ char * username (uid_t uid)
 {
     struct passwd *p;
     if ((p=getpwuid(uid))==NULL)
-        return ("??????");
+        return ("????????");
     return p->pw_name;
 }
 
@@ -1691,7 +1713,7 @@ void CambiarUidLogin (char * login)
         printf ("Imposible cambiar credencial: %s\n", strerror(errno));
 }
 
-void cmd_uid(char *tr[]){ //todo: comprobar funcion
+void cmd_uid(char *tr[]){
 
     uid_t id;
 
@@ -1728,7 +1750,7 @@ void cmd_fork(char *tr[]){
 
 }
 
-void ejecAux(char *tr[],bool prio,int prioval) {
+void ejecAux(char *tr[],bool prio,int prioval, bool as, uid_t user) {
 
     errno=0;
     if (prio){
@@ -1738,14 +1760,19 @@ void ejecAux(char *tr[],bool prio,int prioval) {
         }
     }
 
+    if(as){
+        if (setuid(user)==-1){
+            perror("Unable to change credential");
+            return;
+        }
+    }
+
     if (execvp(tr[0],tr)==-1)
         perror ("Cannot execute");
-
-
 }
 
 void cmd_ejec(char *tr[]){
-    ejecAux(tr,false,0);
+    ejecAux(tr,false,0,false,0);
 }
 
 void cmd_ejecpri(char *tr[]){
@@ -1757,11 +1784,11 @@ void cmd_ejecpri(char *tr[]){
 
     int prio = (int) strtol(tr[0],NULL,10);
 
-    ejecAux(tr+1,true,prio);
+    ejecAux(tr+1,true,prio,false,0);
 
 }
 
-void fgAux(char *tr[],bool prio,int prioval) {
+void fgAux(char *tr[],bool prio,int prioval, bool as, uid_t user)  {
 
     pid_t pid;
 
@@ -1770,9 +1797,18 @@ void fgAux(char *tr[],bool prio,int prioval) {
         if (prio){
             if  ((setpriority(PRIO_PROCESS,getpid(),prioval))==-1 && errno!=0){
                 perror("cannot set priority");
-                exit(0);
+                exit(255);
             }
         }
+
+        if(as){
+            if (setuid(user)==-1){
+                perror("Unable to change credential");
+                exit(255);
+            }
+
+        }
+
         if (execvp(tr[0],tr)==-1)
             perror ("Cannot execute");
         exit(255); /*exec has failed for whatever reason*/
@@ -1784,7 +1820,7 @@ void fgAux(char *tr[],bool prio,int prioval) {
 
 void cmd_fg(char *tr[]){
 
-    fgAux(tr,false,0);
+    fgAux(tr,false,0,false,0);
 
 }
 
@@ -1797,20 +1833,28 @@ void cmd_fgpri(char *tr[]){
 
     int prio = (int) strtol(tr[0],NULL,10);
 
-    fgAux(tr+1,true,prio);
+    fgAux(tr+1,true,prio,false,0);
 }
 
-void backAux(char *tr[],bool prio,int prioval) {
+void backAux(char *tr[],bool prio,int prioval,bool as, uid_t user) {
     tItemProc item;
-    int pid=-1;
+    int pid;
 
     if ((pid=fork())==0){
 
         if (prio){
             if  ((setpriority(PRIO_PROCESS,getpid(),prioval))==-1 && errno!=0){
                 perror("cannot set priority");
-                exit(0);
+                exit(255);
             }
+        }
+
+        if(as){
+            if (setuid(user)==-1){
+                perror("Unable to change credential");
+                exit(255);
+            }
+
         }
 
         if (execvp(tr[0],tr)==-1)
@@ -1818,6 +1862,8 @@ void backAux(char *tr[],bool prio,int prioval) {
         exit(255); /*exec has failed for whatever reason*/
 
     } else{
+
+        item.user=getuid();
 
         //printf("pid: %d --- %d",getpid(), pid);
         item.pid=pid;
@@ -1831,6 +1877,8 @@ void backAux(char *tr[],bool prio,int prioval) {
                 strcat(item.name,tr[i]);
             }
         }
+        sprintf(item.state,"ACTIVE");
+        item.signal=0;
 
         insertProcItem(item,&proclist);
     }
@@ -1840,7 +1888,7 @@ void backAux(char *tr[],bool prio,int prioval) {
 
 void cmd_back(char *tr[]){
 
-    backAux(tr,false,0);
+    backAux(tr,false,0,false,0);
 
 }
 
@@ -1853,62 +1901,196 @@ void cmd_backpri(char *tr[]){
 
     int prio = (int) strtol(tr[0],NULL,10);
 
-    backAux(tr+1,true,prio);
+    backAux(tr+1,true,prio,false,0);
 
 }
 
 
 
 void cmd_ejecas(char *tr[]){
-
-
-
+    ejecAux(tr+1,false,0,true,userUid(tr[0]));
 }
 
 void cmd_fgas(char *tr[]){
-
-
-
+    fgAux(tr+1,false,0,true,userUid(tr[0]));
 }
 
 void cmd_bgas(char *tr[]){
-
-
-
+    backAux(tr+1,false,0,true,userUid(tr[0]));
 }
 
 
 
+char *NombreSenal(int sen) {
+    /*devuelve el nombre senal a partir de la senal*/
+    /* para sitios donde no hay sig2str*/
+    int i;
+    for (i=0; sigstrnum[i].nombre!=NULL; i++)
+        if (sen==sigstrnum[i].senal)
+            return sigstrnum[i].nombre;
+    return ("SIGUNKNOWN");
+}
 
+
+void printjob(procPos pos){
+
+    tItemProc item;
+    int status;
+
+    item = getProcItem(pos,proclist);
+
+    if (waitpid (item.pid,&status, WNOHANG |WUNTRACED | WCONTINUED)==item.pid){
+        if (WIFEXITED(status)){
+            strcpy(item.state,"TERMINATED");
+            item.signal = WEXITSTATUS(status);
+        }
+        else if (WIFSIGNALED(status)){
+            strcpy(item.state,"SIGNALED");
+            item.signal = WTERMSIG(status);
+        }
+        else if (WIFSTOPPED(status)){
+            strcpy(item.state,"STOPPED");
+            item.signal= WSTOPSIG(status);
+        }
+
+        else if (WIFCONTINUED(status)){
+            strcpy(item.state,"ACTIVE");
+            item.signal=0;
+        }
+
+    }
+
+    printf("%6d%12s p=%2d ", item.pid, username(item.user), getpriority(PRIO_PROCESS,item.pid));
+    printTimeFormat(item.exectime,3);
+    printf(" %10s",item.state);
+
+
+    if  (!strcmp(item.state,"SIGNALED")){
+        printf(" (%s)",NombreSenal(item.signal));
+    } else
+        printf(" (%03d)",item.signal);
+
+
+    printf(" %s\n",item.name);
+    updateItem(item,pos,&proclist);
+}
 
 void cmd_listjobs(char *tr[]){
 
     procPos pos;
-    tItemProc item;
 
     if (isEmptyProcList(proclist)) return;
 
     pos = procFirst(proclist);
+
     while (pos!=NULL){
-
-        item = getProcItem(pos,proclist);
-
-        printf("%6d%12s p=%d ", item.pid, username(item.user), getpriority(PRIO_PROCESS,item.pid));
-        printTimeFormat(item.exectime,3);
-        printf(" %s\n",item.name);
-
+        printjob(pos);
         pos = procNext(pos,proclist);
     }
 }
 
+procPos findjob(pid_t pid){
+
+    procPos pos;
+    tItemProc item;
+
+    pos= procFirst(proclist);
+
+    while (pos!=NULL){
+        item= getProcItem(pos,proclist);
+
+        if(item.pid==pid) return pos;
+
+        pos= procNext(pos,proclist);
+    }
+
+    return NULL;
+}
+
+void tofg(pid_t pid){
+
+    int status, sign;
+
+    if (waitpid (pid,&status, 0)==pid){
+        if (WIFEXITED(status)){
+            sign = WEXITSTATUS(status);
+            printf("Process %d terminated normally. Value returned %d\n",pid,sign);
+        }
+        else if (WIFSIGNALED(status)){
+            sign = WTERMSIG(status);
+            printf("Process %d terminated by the signal %s\n",pid, NombreSenal(sign));
+        }
+    }
+
+}
+
 void cmd_job(char *tr[]){
 
+    pid_t pid;
+    procPos pos;
 
+    if (tr[0]==NULL){
+        cmd_listjobs(tr);
+        return;
+    }
+
+    else if(!strcmp(tr[0],"-fg") && tr[1]!=NULL){
+        pid = (int) strtol(tr[1],NULL,10);
+        if ((pos = findjob(pid))!=NULL){
+            tofg(pid);
+            deleteAtProcPosition(pos,&proclist);
+        }
+    } else{
+        pid = (int) strtol(tr[0],NULL,10);
+        if ((pos = findjob(pid))!=NULL){
+            printjob(pos);
+        } else
+            cmd_listjobs(tr);
+    }
+}
+
+void deleteJobs(bool term, bool sig){
+
+    procPos pos;
+    tItemProc item;
+
+    if(isEmptyProcList(proclist))
+        return;
+    pos = procFirst(proclist);
+
+    while (procNext(pos,proclist)!=NULL){
+        item = getProcItem(procNext(pos,proclist),proclist);
+
+        if ((term && !strcmp(item.state,"TERMINATED")) || (sig && !strcmp(item.state,"SIGNALED"))){
+            deleteAtProcPosition(procNext(pos,proclist),&proclist);
+        } else pos = procNext(pos,proclist);
+    }
+
+    pos = procFirst(proclist);
+    item = getProcItem(pos,proclist);
+    if ((term && !strcmp(item.state,"TERMINATED")) || (sig && !strcmp(item.state,"SIGNALED"))){
+        deleteAtProcPosition(pos,&proclist);
+    }
 
 }
 
 void cmd_borrarjobs(char *tr[]){
 
+    if (tr[0]==NULL) {
+        cmd_listjobs(tr);
+        return;
+    }
+
+    if (!strcmp(tr[0],"-term"))
+        deleteJobs(true,false);
+    else if (!strcmp(tr[0],"-sig"))
+        deleteJobs(false,true);
+    else if (!strcmp(tr[0],"-all"))
+        deleteJobs(true,true);
+    else if (!strcmp(tr[0],"-clear"))
+        clearProcList(&proclist);
+    else
+        cmd_listjobs(tr);
 
 }
 
@@ -1920,9 +2102,9 @@ void executecommand(char *tr[]){
 
     if(!strcmp(tr[i],"&")){
         tr[i]=NULL;
-        backAux(tr,false,0);
+        backAux(tr,false,0,false,0);
     }else
-        fgAux(tr,false,0);
+        fgAux(tr,false,0,false,0);
 }
 
 

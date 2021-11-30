@@ -121,3 +121,10 @@ void deleteAtProcPosition(procPos p, procList *l){
     free(p);
 
 }
+
+void updateItem(tItemProc d, procPos p, procList *l){
+    /*store the item at a position p of a list*/
+
+    p ->data = d;
+
+}
