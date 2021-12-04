@@ -1544,7 +1544,6 @@ void redError(char *file){
     }
 
     close(fd);
-    printf("cambiado a %s\n",file);
 }
 
 void redReset(){
