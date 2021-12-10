@@ -6,11 +6,11 @@
 
 #IncludeRegexTransform: 
 
-/home/guillermo/SOp3/list.h
+/home/guillermo/finalSO/list.h
 stdbool.h
 -
 
-/home/guillermo/SOp3/memlist.h
+/home/guillermo/finalSO/memlist.h
 stdbool.h
 -
 stdlib.h
@@ -22,7 +22,7 @@ stdio.h
 sys/types.h
 -
 
-/home/guillermo/SOp3/p3.c
+/home/guillermo/finalSO/p3.c
 stdio.h
 -
 stdlib.h
@@ -62,13 +62,13 @@ sys/resource.h
 signal.h
 -
 list.h
-/home/guillermo/SOp3/list.h
+/home/guillermo/finalSO/list.h
 memlist.h
-/home/guillermo/SOp3/memlist.h
+/home/guillermo/finalSO/memlist.h
 proclist.h
-/home/guillermo/SOp3/proclist.h
+/home/guillermo/finalSO/proclist.h
 
-/home/guillermo/SOp3/proclist.h
+/home/guillermo/finalSO/proclist.h
 stdbool.h
 -
 stdlib.h

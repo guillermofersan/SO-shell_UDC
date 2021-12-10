@@ -165,74 +165,74 @@ struct SEN{
     int senal;
 };
 static struct SEN sigstrnum[]={
-        "HUP", SIGHUP,
-        "INT", SIGINT,
-        "QUIT", SIGQUIT,
-        "ILL", SIGILL,
-        "TRAP", SIGTRAP,
-        "ABRT", SIGABRT,
-        "IOT", SIGIOT,
-        "BUS", SIGBUS,
-        "FPE", SIGFPE,
-        "KILL", SIGKILL,
-        "USR1", SIGUSR1,
-        "SEGV", SIGSEGV,
-        "USR2", SIGUSR2,
-        "PIPE", SIGPIPE,
-        "ALRM", SIGALRM,
-        "TERM", SIGTERM,
-        "CHLD", SIGCHLD,
-        "CONT", SIGCONT,
-        "STOP", SIGSTOP,
-        "TSTP", SIGTSTP,
-        "TTIN", SIGTTIN,
-        "TTOU", SIGTTOU,
-        "URG", SIGURG,
-        "XCPU", SIGXCPU,
-        "XFSZ", SIGXFSZ,
-        "VTALRM", SIGVTALRM,
-        "PROF", SIGPROF,
-        "WINCH", SIGWINCH,
-        "IO", SIGIO,
-        "SYS", SIGSYS,
-/*senales que no hay en todas partes*/
+        {"HUP", SIGHUP},
+        {"INT", SIGINT},
+        {"QUIT", SIGQUIT},
+        {"ILL", SIGILL},
+        {"TRAP", SIGTRAP},
+        {"ABRT", SIGABRT},
+        {"IOT", SIGIOT},
+        {"BUS", SIGBUS},
+        {"FPE", SIGFPE},
+        {"KILL", SIGKILL},
+        {"USR1", SIGUSR1},
+        {"SEGV", SIGSEGV},
+        {"USR2", SIGUSR2},
+        {"PIPE", SIGPIPE},
+        {"ALRM", SIGALRM},
+        {"TERM", SIGTERM},
+        {"CHLD", SIGCHLD},
+        {"CONT", SIGCONT},
+        {"STOP", SIGSTOP},
+        {"TSTP", SIGTSTP},
+        {"TTIN", SIGTTIN},
+        {"TTOU", SIGTTOU},
+        {"URG", SIGURG},
+        {"XCPU", SIGXCPU},
+        {"XFSZ", SIGXFSZ},
+        {"VTALRM", SIGVTALRM},
+        {"PROF", SIGPROF},
+        {"WINCH", SIGWINCH},
+        {"IO", SIGIO},
+        {"SYS", SIGSYS},
+
 #ifdef SIGPOLL
-        "POLL", SIGPOLL,
+        {"POLL", SIGPOLL},
 #endif
 #ifdef SIGPWR
-        "PWR", SIGPWR,
+        {"PWR", SIGPWR},
 #endif
 #ifdef SIGEMT
-        "EMT", SIGEMT,
+        {"EMT", SIGEMT},
 #endif
 #ifdef SIGINFO
-        "INFO", SIGINFO,
+        {"INFO", SIGINFO},
 #endif
 #ifdef SIGSTKFLT
-        "STKFLT", SIGSTKFLT,
+        {"STKFLT", SIGSTKFLT},
 #endif
 #ifdef SIGCLD
-        "CLD", SIGCLD,
+        {"CLD", SIGCLD},
 #endif
 #ifdef SIGLOST
-        "LOST", SIGLOST,
+        {"LOST", SIGLOST},
 #endif
 #ifdef SIGCANCEL
-        "CANCEL", SIGCANCEL,
+        {"CANCEL", SIGCANCEL},
 #endif
 #ifdef SIGTHAW
-        "THAW", SIGTHAW,
+        {"THAW", SIGTHAW},
 #endif
 #ifdef SIGFREEZE
-        "FREEZE", SIGFREEZE,
+        {"FREEZE", SIGFREEZE},
 #endif
 #ifdef SIGLWP
-        "LWP", SIGLWP,
+        {"LWP", SIGLWP},
 #endif
 #ifdef SIGWAITING
-        "WAITING", SIGWAITING,
+        {"WAITING", SIGWAITING},
 #endif
-        NULL,-1,
+        {NULL,-1},
 };
 
 
@@ -1042,7 +1042,7 @@ void * ObtainMemShmget (key_t key, size_t size){
 }
 
 
-void SharedCreate (char *tr[]){ //todo: cambiar atoi por strtol
+void SharedCreate (char *tr[]){
 /*Function to create/get a shared memory address*/
     key_t k;
     size_t tam;
@@ -1309,7 +1309,7 @@ void volcarmemaux(void *addr, int cont){
 
 
 
-void cmd_volcarmem(char *tr[]){ //todo: atoi
+void cmd_volcarmem(char *tr[]){
 /*Shows the contents of cont bytes starting at memory address addr*/
 
     int cont=25;
@@ -1556,7 +1556,7 @@ void redReset(){
 void cmd_rederr(char *tr[]){
 
     if  (tr[0]==NULL){
-        printf("error estandar en fichero %s\n",stderrorFile);
+        printf("standard error in file %s\n",stderrorFile);
     } else if (!strcmp(tr[0],"-reset")){
         redReset();
     } else{
@@ -1565,8 +1565,8 @@ void cmd_rederr(char *tr[]){
 
 }
 
-void showEnviron (char **envir, char * envirName)
-{
+void showEnviron (char **envir, char * envirName){
+
     int i=0;
     while (envir[i]!=NULL) {
         printf ("%p->%s[%d]=(%p) %s\n", &envir[i],
@@ -1591,8 +1591,8 @@ void cmd_entorno(char *tr[]){
         printf("Uso: entorno [-environ|-addr]\n");
 }
 
-int BuscarVariable (char * var, char *e[])
-{
+int BuscarVariable (char * var, char *e[]){
+
     int pos=0;
     char aux[4092];
     strcpy (aux,var);
@@ -1631,21 +1631,21 @@ void cmd_mostrarvar(char *tr[]){
         return;
     }
 
-    /*Con arg3 main*/
+    /*With arg3 main*/
     if ((pos=BuscarVariable(tr[0],arg3env))==-1)
         return;
     printf("With arg3 main -> %s(%p) %p\n",arg3env[pos],arg3env[pos], &arg3env[pos]);
 
-    /*Con environ*/
+    /*With environ*/
     if ((pos=BuscarVariable(tr[0],environ))==-1)
         return;
-    printf("  With environ -> %s(%p) %p\n",environ[pos],environ[pos], environ[pos]); //todo: dos veces el mismo?
+    printf("  With environ -> %s(%p) %p\n",environ[pos],environ[pos], environ[pos]);
 
-    /*Con getenv*/
+    /*With getenv*/
     if  ((string=getenv(tr[0]))==NULL)
         perror("");
     else
-    printf("   With getenv ->%s(%p)\n",string,string);
+    printf("   With getenv -> %s(%p)\n",string,string);
 }
 
 
@@ -1659,7 +1659,7 @@ void cmd_cambiarvar(char *tr[]){
         return;
     }
 
-    sprintf(string,"%s=%s",tr[1],tr[2]); //todo:revisar formato
+    sprintf(string,"%s=%s",tr[1],tr[2]);
 
     if  (!strcmp(tr[0],"-a")){
         if (changeVariable(tr[1],tr[2],arg3env)==-1)
@@ -1863,12 +1863,8 @@ void backAux(char *tr[],bool prio,int prioval,bool as, uid_t user) {
     } else{
 
         item.user=getuid();
-
-        //printf("pid: %d --- %d",getpid(), pid);
         item.pid=pid;
-
         item.exectime= time(NULL);
-
         sprintf(item.name,"%s",tr[0]);
         if (tr[0]!=NULL){
             for (int i = 1; tr[i]!=NULL; i++) {
@@ -1921,8 +1917,6 @@ void cmd_bgas(char *tr[]){
 
 
 char *NombreSenal(int sen) {
-    /*devuelve el nombre senal a partir de la senal*/
-    /* para sitios donde no hay sig2str*/
     int i;
     for (i=0; sigstrnum[i].nombre!=NULL; i++)
         if (sen==sigstrnum[i].senal)
