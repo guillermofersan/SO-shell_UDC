@@ -1,3 +1,0 @@
-/home/guillermo/finalSO/cmake-build-debug/CMakeFiles/rebuild_cache.dir
-/home/guillermo/finalSO/cmake-build-debug/CMakeFiles/edit_cache.dir
-/home/guillermo/finalSO/cmake-build-debug/CMakeFiles/practSO.dir
