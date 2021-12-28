@@ -1,2 +1,2 @@
-# SOpract
+# SO-pract
 Operative Systems Practicals
